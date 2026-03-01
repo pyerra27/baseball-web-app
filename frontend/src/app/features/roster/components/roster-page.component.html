@@ -1,0 +1,149 @@
+<div class="roster-page">
+
+    <!-- Page heading -->
+    <div class="page-header">
+        <h1 class="page-title">Team Roster</h1>
+        <p class="page-subtitle">Select a team and season to view the full roster.</p>
+    </div>
+
+    <!-- Selectors -->
+    <div class="selectors">
+        <div class="selector-group">
+            <label class="selector-label" for="season-select">Season</label>
+            <select
+                id="season-select"
+                class="selector-input"
+                [ngModel]="selectedSeason()"
+                (ngModelChange)="onSeasonChange($event)"
+                [disabled]="teamsLoading()"
+            >
+                <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+            </select>
+        </div>
+
+        <div class="selector-group">
+            <label class="selector-label" for="team-select">Team</label>
+            <select
+                id="team-select"
+                class="selector-input"
+                [ngModel]="selectedTeamId()"
+                (ngModelChange)="onTeamChange($event)"
+                [disabled]="teamsLoading() || teams().length === 0"
+            >
+                <option [value]="null" disabled>
+                    {{ teamsLoading() ? 'Loading teams…' : 'Select a team' }}
+                </option>
+                <option *ngFor="let team of teams()" [value]="team.id">
+                    {{ team.name }}
+                </option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Teams error -->
+    <div *ngIf="teamsError()" class="error-banner">
+        {{ teamsError() }}
+    </div>
+
+    <!-- Roster loading -->
+    <div *ngIf="rosterLoading()" class="loading-state">
+        <span class="loading-spinner"></span>
+        Loading roster…
+    </div>
+
+    <!-- Roster error -->
+    <div *ngIf="rosterError()" class="error-banner">
+        {{ rosterError() }}
+    </div>
+
+    <!-- Roster content -->
+    <div *ngIf="roster() && !rosterLoading()" class="roster-content">
+
+        <!-- Summary strip -->
+        <div class="roster-summary">
+            <span class="summary-chip">
+                <strong>{{ roster()!.position_players.length }}</strong> Position Players
+            </span>
+            <span class="summary-divider">·</span>
+            <span class="summary-chip">
+                <strong>{{ roster()!.pitchers.length }}</strong> Pitchers
+            </span>
+            <span class="summary-divider">·</span>
+            <span class="summary-chip">
+                <strong>{{ totalPlayers() }}</strong> Total
+            </span>
+        </div>
+
+        <div class="roster-columns">
+
+            <!-- Position Players -->
+            <section class="roster-section">
+                <h2 class="section-title">
+                    <span class="section-icon">🧢</span>
+                    Position Players
+                </h2>
+                <div *ngIf="roster()!.position_players.length === 0" class="empty-section">
+                    No position players found.
+                </div>
+                <table *ngIf="roster()!.position_players.length > 0" class="player-table">
+                    <thead>
+                        <tr>
+                            <th class="col-jersey">#</th>
+                            <th class="col-name">Name</th>
+                            <th class="col-pos">Pos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let player of roster()!.position_players" class="player-row">
+                            <td class="col-jersey">{{ player.jersey_number }}</td>
+                            <td class="col-name">{{ player.full_name }}</td>
+                            <td class="col-pos">
+                                <span class="pos-badge pos-badge--field">
+                                    {{ player.position_abbreviation }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Pitchers -->
+            <section class="roster-section">
+                <h2 class="section-title">
+                    <span class="section-icon">⚾</span>
+                    Pitchers
+                </h2>
+                <div *ngIf="roster()!.pitchers.length === 0" class="empty-section">
+                    No pitchers found.
+                </div>
+                <table *ngIf="roster()!.pitchers.length > 0" class="player-table">
+                    <thead>
+                        <tr>
+                            <th class="col-jersey">#</th>
+                            <th class="col-name">Name</th>
+                            <th class="col-pos">Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let player of roster()!.pitchers" class="player-row">
+                            <td class="col-jersey">{{ player.jersey_number }}</td>
+                            <td class="col-name">{{ player.full_name }}</td>
+                            <td class="col-pos">
+                                <span class="pos-badge pos-badge--pitcher">
+                                    {{ player.position_abbreviation }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Empty prompt -->
+    <div *ngIf="!roster() && !rosterLoading() && !rosterError() && selectedTeamId() === null" class="empty-prompt">
+        Select a season and team above to load the roster.
+    </div>
+
+</div>

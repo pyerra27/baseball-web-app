@@ -1,0 +1,71 @@
+/* ============================================================
+   Global Styles — MLB App
+   A clean, utilitarian dark theme inspired by stadium scoreboards.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap');
+
+/* ---- CSS variables ---- */
+:root {
+    /* Colors */
+    --color-bg: #0e1116;
+    --color-surface: #161b22;
+    --color-surface-hover: #1c2230;
+    --color-border: #2d3340;
+    --color-border-subtle: #1e2530;
+    --color-text: #e6edf3;
+    --color-text-muted: #7d8590;
+    --color-accent: #e8a838;
+    --color-accent-muted: rgba(232, 168, 56, 0.15);
+
+    /* Position badge colors */
+    --color-badge-field-bg: rgba(56, 139, 253, 0.15);
+    --color-badge-field-text: #79c0ff;
+    --color-badge-pitcher-bg: rgba(63, 185, 80, 0.15);
+    --color-badge-pitcher-text: #56d364;
+
+    /* Typography */
+    --font-display: 'Barlow Condensed', sans-serif;
+    --font-body: 'Barlow', sans-serif;
+}
+
+/* ---- Reset & base ---- */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+    margin: 0;
+    line-height: 1.2;
+}
+
+select option {
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+}

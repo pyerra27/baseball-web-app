@@ -1,0 +1,241 @@
+.roster-page {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* ---- Page header ---- */
+.page-header {
+    border-left: 4px solid var(--color-accent);
+    padding-left: 1rem;
+}
+
+.page-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.25rem;
+    color: var(--color-text);
+}
+
+.page-subtitle {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+}
+
+/* ---- Selectors ---- */
+.selectors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.selector-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.selector-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.selector-input {
+    appearance: none;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
+    min-width: 220px;
+    padding: 0.6rem 2.5rem 0.6rem 0.9rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.selector-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-muted);
+}
+
+.selector-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ---- Error banner ---- */
+.error-banner {
+    background: #2d1a1a;
+    border: 1px solid #7f2b2b;
+    border-radius: 6px;
+    color: #f87171;
+    padding: 0.85rem 1.1rem;
+    font-size: 0.9rem;
+}
+
+/* ---- Loading ---- */
+.loading-state {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    padding: 2rem 0;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---- Summary strip ---- */
+.roster-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.summary-chip strong {
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+.summary-divider {
+    color: var(--color-border);
+}
+
+/* ---- Roster columns ---- */
+.roster-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .roster-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---- Section ---- */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+}
+
+.section-icon {
+    font-size: 1rem;
+}
+
+.empty-section {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    padding: 1rem 0;
+}
+
+/* ---- Player table ---- */
+.player-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.player-table thead th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    padding: 0 0.75rem 0.6rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.player-row td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--color-border-subtle);
+    vertical-align: middle;
+}
+
+.player-row:last-child td {
+    border-bottom: none;
+}
+
+.player-row:hover td {
+    background: var(--color-surface-hover);
+}
+
+.col-jersey {
+    width: 3rem;
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.col-pos {
+    width: 4.5rem;
+    text-align: right;
+}
+
+/* ---- Position badges ---- */
+.pos-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.pos-badge--field {
+    background: var(--color-badge-field-bg);
+    color: var(--color-badge-field-text);
+}
+
+.pos-badge--pitcher {
+    background: var(--color-badge-pitcher-bg);
+    color: var(--color-badge-pitcher-text);
+}
+
+/* ---- Empty prompt ---- */
+.empty-prompt {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    border: 2px dashed var(--color-border);
+    border-radius: 12px;
+}
