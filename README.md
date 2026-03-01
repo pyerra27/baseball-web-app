@@ -14,6 +14,8 @@ A full-stack application for viewing historical and current MLB data.
 
 ### Backend
 
+Make sure to clone the baseball-api wrapper: [Baseball API](https://github.com/pyerra27/baseball-api)
+
 ```bash
 cd backend
 
@@ -22,7 +24,7 @@ python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install the baseball-api wrapper in editable mode + backend deps
-pip install -e <path_to_baseball-api_wrapper> ([text](https://github.com/pyerra27/baseball-api))
+pip install -e <path_to_baseball-api_wrapper> 
 pip install -r requirements.txt
 
 # Run the dev server
