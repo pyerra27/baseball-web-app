@@ -6,15 +6,15 @@ A full-stack application for viewing historical and current MLB data.
 
 ```
 /
-├── backend/          ← FastAPI backend
-└── frontend/         ← Angular 17+ frontend
+├── backend/          ← FastAPI REST API
+└── frontend/         ← React 18 + Vite frontend
 ```
 
 ## Quick Start
 
 ### Backend
 
-Make sure to clone the baseball-api wrapper: [Baseball API](https://github.com/pyerra27/baseball-api)
+Requires the [baseball-api wrapper](https://github.com/pyerra27/baseball-api) — clone it alongside this repo first.
 
 ```bash
 cd backend
@@ -23,12 +23,18 @@ cd backend
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Install the baseball-api wrapper in editable mode + backend deps
-pip install -e <path_to_baseball-api_wrapper> 
-pip install -r requirements.txt
+# Install the baseball-api wrapper and backend dependencies
+pip install -e <path_to_baseball-api-wrapper>
+pip install -e .
 
-# Run the dev server
+# Run the dev server (available at http://localhost:8000)
 uvicorn app.main:app --reload --port 8000
+```
+
+To install test dependencies as well:
+
+```bash
+pip install -e ".[dev]"
 ```
 
 ### Frontend
@@ -36,7 +42,7 @@ uvicorn app.main:app --reload --port 8000
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev  # available at http://localhost:5173
 ```
 
 ### Running Backend Tests
