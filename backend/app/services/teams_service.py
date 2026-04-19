@@ -2,10 +2,10 @@
 Teams Service
 =============
 Business logic for retrieving and transforming team data from the
-baseball-api wrapper into the application's response models.
+baseball-api-wrapper into the application's response models.
 """
 
-from baseball_api import MLBStatsClient, get_teams
+from baseball_api_wrapper import MLBStatsClient, get_teams
 
 from app.models.responses import TeamResponse
 

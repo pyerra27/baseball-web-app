@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config'
-import type { Team, RosterResponse } from '../models/mlb.models'
+import type { Team, RosterResponse, PlayerStatsResponse } from '../models/mlb.models'
 
 async function apiFetch<T>(path: string): Promise<T> {
     const res = await fetch(`${API_BASE_URL}${path}`)
@@ -16,4 +16,8 @@ export function fetchTeams(season: number): Promise<Team[]> {
 
 export function fetchRoster(teamId: number, season: number): Promise<RosterResponse> {
     return apiFetch<RosterResponse>(`/roster/${teamId}/${season}`)
+}
+
+export function fetchPlayerStats(playerId: number, season: number): Promise<PlayerStatsResponse> {
+    return apiFetch<PlayerStatsResponse>(`/players/${playerId}/stats/${season}`)
 }

@@ -5,15 +5,13 @@ Endpoints for retrieving team roster data.
 """
 
 from fastapi import APIRouter, HTTPException, Path, Query
-from baseball_api.client import MLBStatsAPIError
+from baseball_api_wrapper.client import MLBStatsAPIError
 
+from app.constants import MLB_FIRST_SEASON, current_mlb_season
 from app.models.responses import RosterResponse
 from app.services.roster_service import fetch_roster
 
 router = APIRouter(prefix="/roster", tags=["Roster"])
-
-_CURRENT_YEAR = 2025
-_MIN_YEAR = 1900
 
 
 @router.get("/{team_id}/{season}", response_model=RosterResponse)
@@ -21,8 +19,8 @@ def get_roster(
     team_id: int = Path(..., description="The MLB team ID, e.g. 147 for the Yankees."),
     season: int = Path(
         ...,
-        ge=_MIN_YEAR,
-        le=_CURRENT_YEAR,
+        ge=MLB_FIRST_SEASON,
+        le=current_mlb_season(),
         description="The MLB season year (1900 – current).",
     ),
 ):

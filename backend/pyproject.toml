@@ -11,6 +11,7 @@ dependencies = [
     "fastapi>=0.111.0",
     "uvicorn[standard]>=0.29.0",
     "pydantic>=2.7.0",
+    "baseball-api-wrapper @ file:../../baseball-api-wrapper",
 ]
 
 [project.optional-dependencies]
@@ -24,3 +25,4 @@ dev = [
 testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "-v --tb=short"
+pythonpath = ["."]

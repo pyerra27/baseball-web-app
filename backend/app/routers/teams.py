@@ -5,23 +5,21 @@ Endpoints for retrieving MLB team data.
 """
 
 from fastapi import APIRouter, HTTPException, Query
-from baseball_api.client import MLBStatsAPIError
+from baseball_api_wrapper.client import MLBStatsAPIError
 
+from app.constants import MLB_FIRST_SEASON, current_mlb_season
 from app.models.responses import TeamResponse
 from app.services.teams_service import fetch_teams
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
-
-_CURRENT_YEAR = 2025
-_MIN_YEAR = 1900
 
 
 @router.get("", response_model=list[TeamResponse])
 def get_teams(
     season: int = Query(
         ...,
-        ge=_MIN_YEAR,
-        le=_CURRENT_YEAR,
+        ge=MLB_FIRST_SEASON,
+        le=current_mlb_season(),
         description="The MLB season year (1900 – current).",
     ),
 ):

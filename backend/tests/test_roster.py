@@ -11,7 +11,7 @@ import pytest
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 
-from baseball_api.client import MLBStatsAPIError
+from baseball_api_wrapper.client import MLBStatsAPIError
 from app.main import app
 from app.services.roster_service import fetch_roster, _transform_entry
 from tests.conftest import make_raw_player

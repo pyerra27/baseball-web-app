@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { fetchTeams, fetchRoster } from '../../services/mlbApi'
 import type { Player } from '../../models/mlb.models'
 import './RosterPage.css'
@@ -7,7 +8,7 @@ import './RosterPage.css'
 const CURRENT_YEAR = new Date().getFullYear()
 const YEARS = Array.from({ length: CURRENT_YEAR - 1899 }, (_, i) => CURRENT_YEAR - i)
 
-function PlayerTable({ players, isPitcher }: { players: Player[]; isPitcher: boolean }) {
+function PlayerTable({ players, isPitcher, season }: { players: Player[]; isPitcher: boolean; season: number }) {
     if (players.length === 0) {
         return (
             <div className="empty-section">
@@ -28,7 +29,11 @@ function PlayerTable({ players, isPitcher }: { players: Player[]; isPitcher: boo
                 {players.map((player) => (
                     <tr key={player.id} className="player-row">
                         <td className="col-jersey">{player.jersey_number}</td>
-                        <td className="col-name">{player.full_name}</td>
+                        <td className="col-name">
+                            <Link className="player-link" to={`/player/${player.id}?season=${season}`}>
+                                {player.full_name}
+                            </Link>
+                        </td>
                         <td className="col-pos">
                             <span className={`pos-badge ${isPitcher ? 'pos-badge--pitcher' : 'pos-badge--field'}`}>
                                 {player.position_abbreviation}
@@ -153,7 +158,7 @@ export default function RosterPage() {
                                 <span className="section-icon">🧢</span>
                                 Position Players
                             </h2>
-                            <PlayerTable players={rosterQuery.data.position_players} isPitcher={false} />
+                            <PlayerTable players={rosterQuery.data.position_players} isPitcher={false} season={season} />
                         </section>
 
                         <section className="roster-section">
@@ -161,7 +166,7 @@ export default function RosterPage() {
                                 <span className="section-icon">⚾</span>
                                 Pitchers
                             </h2>
-                            <PlayerTable players={rosterQuery.data.pitchers} isPitcher={true} />
+                            <PlayerTable players={rosterQuery.data.pitchers} isPitcher={true} season={season} />
                         </section>
                     </div>
                 </div>

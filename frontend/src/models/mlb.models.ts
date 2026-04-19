@@ -32,3 +32,43 @@ export interface RosterResponse {
     pitchers: Player[]
     position_players: Player[]
 }
+
+export interface HittingStats {
+    games_played: number | null
+    at_bats: number | null
+    runs: number | null
+    hits: number | null
+    doubles: number | null
+    triples: number | null
+    home_runs: number | null
+    rbi: number | null
+    stolen_bases: number | null
+    avg: string | null
+    obp: string | null
+    slg: string | null
+    ops: string | null
+}
+
+export interface PitchingStats {
+    games_played: number | null
+    games_started: number | null
+    wins: number | null
+    losses: number | null
+    saves: number | null
+    innings_pitched: string | null
+    hits: number | null
+    earned_runs: number | null
+    base_on_balls: number | null
+    strike_outs: number | null
+    era: string | null
+    whip: string | null
+}
+
+export interface PlayerStatsResponse {
+    player_id: number
+    full_name: string
+    position_type: string
+    season: number
+    hitting: HittingStats | null
+    pitching: PitchingStats | null
+}

@@ -233,6 +233,18 @@
     color: var(--color-badge-pitcher-text);
 }
 
+/* ---- Player name link ---- */
+.player-link {
+    color: var(--color-text);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.player-link:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+}
+
 /* ---- Empty prompt ---- */
 .empty-prompt {
     text-align: center;
