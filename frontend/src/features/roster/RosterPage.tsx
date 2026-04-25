@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { fetchTeams, fetchRoster } from '../../services/mlbApi'
 import type { Player } from '../../models/mlb.models'
@@ -77,8 +77,12 @@ function PlayerTable({ players, isPitcher, season }: { players: Player[]; isPitc
 }
 
 export default function RosterPage() {
-    const [season, setSeason] = useState(CURRENT_YEAR)
-    const [teamId, setTeamId] = useState<number | null>(null)
+    const [searchParams] = useSearchParams()
+    const [season, setSeason] = useState(() => Number(searchParams.get('season')) || CURRENT_YEAR)
+    const [teamId, setTeamId] = useState<number | null>(() => {
+        const id = searchParams.get('teamId')
+        return id ? Number(id) : null
+    })
 
     const teamsQuery = useQuery({
         queryKey: ['teams', season],

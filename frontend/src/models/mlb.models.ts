@@ -35,6 +35,7 @@ export interface RosterResponse {
 
 export interface HittingStats {
     games_played: number | null
+    plate_appearances: number | null
     at_bats: number | null
     runs: number | null
     hits: number | null
@@ -43,6 +44,7 @@ export interface HittingStats {
     home_runs: number | null
     rbi: number | null
     stolen_bases: number | null
+    base_on_balls: number | null
     avg: string | null
     obp: string | null
     slg: string | null
@@ -71,4 +73,24 @@ export interface PlayerStatsResponse {
     season: number
     hitting: HittingStats | null
     pitching: PitchingStats | null
+}
+
+export interface TeamSplit {
+    team_id: number | null
+    team_abbreviation: string | null
+    hitting: HittingStats | null
+    pitching: PitchingStats | null
+}
+
+export interface YearlyStats {
+    season: number
+    splits: TeamSplit[]
+    totals: TeamSplit | null
+}
+
+export interface PlayerCareerStatsResponse {
+    player_id: number
+    full_name: string
+    position_type: string
+    seasons: YearlyStats[]
 }
