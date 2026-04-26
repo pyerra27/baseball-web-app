@@ -1,9 +1,17 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { fetchScores } from '../../services/mlbApi'
 import type { GameResult } from '../../models/mlb.models'
 import { cn } from '@/lib/utils'
+
+type Tab = 'today' | 'yesterday'
+
+function getTodayStr(): string {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 function GameCard({ game }: { game: GameResult }) {
     const isFinal = game.status === 'Final' || game.status === 'Game Over'
@@ -71,41 +79,63 @@ function formatDate(iso: string): string {
 }
 
 export default function ScoresTicker() {
-    const scoresQuery = useQuery({
-        queryKey: ['scores'],
+    const [activeTab, setActiveTab] = useState<Tab>('yesterday')
+    const today = getTodayStr()
+
+    const yesterdayQuery = useQuery({
+        queryKey: ['scores', 'yesterday'],
         queryFn: () => fetchScores(),
         staleTime: 5 * 60 * 1000,
     })
 
-    if (scoresQuery.isError) {
-        return (
-            <div className="error-box">
-                Failed to load scores: {(scoresQuery.error as Error).message}
-            </div>
-        )
-    }
+    const todayQuery = useQuery({
+        queryKey: ['scores', 'today', today],
+        queryFn: () => fetchScores(today),
+        staleTime: 60 * 1000,
+        refetchInterval: 60 * 1000,
+    })
 
-    const date = scoresQuery.data?.date
-    const games = scoresQuery.data?.games ?? []
+    const activeQuery = activeTab === 'today' ? todayQuery : yesterdayQuery
+    const date = activeQuery.data?.date
+    const games = activeQuery.data?.games ?? []
 
     return (
         <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-                <h2 className="section-heading">
-                    Yesterday's Scores
-                </h2>
+            <div className="flex items-center gap-3 border-b border-app-border-subtle">
+                {(['today', 'yesterday'] as Tab[]).map((tab) => (
+                    <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={cn(
+                            'pb-2 text-xs font-semibold tracking-wider uppercase transition-colors border-b-2 -mb-px',
+                            activeTab === tab
+                                ? 'border-app-accent text-app-text'
+                                : 'border-transparent text-app-muted hover:text-app-text',
+                        )}
+                    >
+                        {tab === 'today' ? "Today's Games" : 'Yesterday'}
+                    </button>
+                ))}
                 {date && (
-                    <span className="text-xs text-app-muted font-semibold tracking-wide">
+                    <span className="ml-1 pb-2 text-xs text-app-muted font-semibold tracking-wide">
                         {formatDate(date)}
                     </span>
                 )}
-                {scoresQuery.isFetching && (
-                    <Loader2 className="size-3.5 animate-spin text-app-accent" />
+                {activeQuery.isFetching && (
+                    <Loader2 className="size-3.5 animate-spin text-app-accent mb-0.5" />
                 )}
             </div>
 
-            {!scoresQuery.isFetching && games.length === 0 && (
-                <p className="text-app-muted text-sm">No games played.</p>
+            {activeQuery.isError && (
+                <div className="error-box">
+                    Failed to load scores: {(activeQuery.error as Error).message}
+                </div>
+            )}
+
+            {!activeQuery.isFetching && !activeQuery.isError && games.length === 0 && (
+                <p className="text-app-muted text-sm">
+                    {activeTab === 'today' ? 'No games scheduled today.' : 'No games played.'}
+                </p>
             )}
 
             {games.length > 0 && (
