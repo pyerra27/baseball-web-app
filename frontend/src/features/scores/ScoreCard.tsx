@@ -11,7 +11,7 @@ function GameCard({ game }: { game: GameResult }) {
 
     return (
         <Link to={`/game/${game.game_pk}`} className="no-underline">
-            <div className="bg-app-surface border border-app-border rounded-lg px-4 py-3 flex flex-col gap-2 min-w-[160px] hover:border-app-accent transition-colors duration-150 cursor-pointer">
+            <div className="game-card">
                 <TeamRow
                     abbreviation={away.abbreviation}
                     score={away.score}
@@ -79,7 +79,7 @@ export default function ScoresTicker() {
 
     if (scoresQuery.isError) {
         return (
-            <div className="bg-app-error-bg border border-app-error-border rounded-md text-red-400 px-4 py-3 text-sm">
+            <div className="error-box">
                 Failed to load scores: {(scoresQuery.error as Error).message}
             </div>
         )
@@ -91,7 +91,7 @@ export default function ScoresTicker() {
     return (
         <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
-                <h2 className="font-display text-[1.1rem] font-bold tracking-[0.03em] uppercase text-app-text">
+                <h2 className="section-heading">
                     Yesterday's Scores
                 </h2>
                 {date && (

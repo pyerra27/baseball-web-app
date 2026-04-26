@@ -4,6 +4,15 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>MLB App</title>
+        <script>
+            // Apply theme before React loads to avoid a flash of wrong colors.
+            // Default is dark; light is only used if explicitly stored.
+            try {
+                if (localStorage.getItem('theme') !== 'light') {
+                    document.documentElement.classList.add('dark')
+                }
+            } catch (_) {}
+        </script>
     </head>
     <body>
         <div id="root"></div>

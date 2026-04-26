@@ -6,13 +6,6 @@ import { fetchPlayerCareerStats } from '../../services/mlbApi'
 import type { TeamSplit, YearlyStats } from '../../models/mlb.models'
 import { Button } from '@/components/ui/button'
 
-const thClass = 'text-center text-xs font-semibold tracking-[0.08em] uppercase text-app-muted px-4 pb-2.5 border-b border-app-border whitespace-nowrap first:text-left first:pl-0'
-const tdBase = 'text-center px-4 py-3 tabular-nums whitespace-nowrap border-b border-app-border-subtle'
-const tdClass = `${tdBase} text-app-text`
-const tdHighlight = `${tdBase} text-app-text bg-app-accent-muted`
-const tdSub = `${tdBase} text-app-muted text-xs`
-const tdSubHighlight = `${tdBase} text-app-muted text-xs bg-app-accent-muted`
-
 type Col = { label: string; value: (s: TeamSplit) => string | number | null | undefined }
 
 const HITTING_COLS: Col[] = [
@@ -80,25 +73,22 @@ function CareerTable({
 }) {
     return (
         <div className="flex flex-col gap-3">
-            <h2 className="font-display text-[1.1rem] font-bold tracking-[0.03em] uppercase text-app-text m-0">
-                {title}
-            </h2>
+            <h2 className="section-heading m-0">{title}</h2>
             <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-sm">
+                <table className="data-table">
                     <thead>
                         <tr>
-                            <th className={thClass}>Year</th>
-                            <th className={thClass}>Team</th>
-                            {cols.map(c => <th key={c.label} className={thClass}>{c.label}</th>)}
+                            <th className="th-c">Year</th>
+                            <th className="th-c">Team</th>
+                            {cols.map(c => <th key={c.label} className="th-c">{c.label}</th>)}
                         </tr>
                     </thead>
                     <tbody>
                         {seasons.flatMap(yearly => {
                             const isHighlighted = yearly.season === highlightSeason
-                            const td = isHighlighted ? tdHighlight : tdClass
-                            const tdSplit = isHighlighted ? tdSubHighlight : tdSub
+                            const td = isHighlighted ? 'td-c-hl' : 'td-c-text'
+                            const tdSplit = isHighlighted ? 'td-c-sub-hl' : 'td-c-muted'
 
-                            // Single-team season — one row, year + team + stats
                             if (!yearly.totals) {
                                 const split = yearly.splits[0]
                                 return [(
@@ -106,7 +96,7 @@ function CareerTable({
                                         key={yearly.season}
                                         ref={isHighlighted ? highlightRowRef : undefined}
                                     >
-                                        <td className={`${td} font-semibold ${isHighlighted ? 'text-app-accent' : ''}`}>
+                                        <td className={`${td} font-semibold${isHighlighted ? ' text-app-accent' : ''}`}>
                                             {yearly.season}
                                         </td>
                                         <td className={td}>
@@ -119,13 +109,12 @@ function CareerTable({
                                 )]
                             }
 
-                            // Multi-team season — TOT row with year, then indented team splits
                             return [
                                 <tr
                                     key={`${yearly.season}-tot`}
                                     ref={isHighlighted ? highlightRowRef : undefined}
                                 >
-                                    <td className={`${td} font-semibold ${isHighlighted ? 'text-app-accent' : ''}`}>
+                                    <td className={`${td} font-semibold${isHighlighted ? ' text-app-accent' : ''}`}>
                                         {yearly.season}
                                     </td>
                                     <td className={`${td} font-semibold`}>TOT</td>
@@ -180,8 +169,7 @@ export default function PlayerPage() {
     const hasPitching = data?.seasons.some(s => s.splits.some(sp => sp.pitching))
 
     return (
-        <div className="flex flex-col gap-8 max-w-[1100px] mx-auto p-8">
-
+        <div className="page">
             <Button
                 variant="outline"
                 size="sm"
@@ -193,13 +181,13 @@ export default function PlayerPage() {
             </Button>
 
             {query.isError && (
-                <div className="bg-app-error-bg border border-app-error-border rounded-md text-red-400 px-4 py-3 text-sm">
+                <div className="error-box">
                     Failed to load player stats: {(query.error as Error).message}
                 </div>
             )}
 
             {query.isPending && (
-                <div className="flex items-center gap-3 text-app-muted text-[0.95rem] py-8">
+                <div className="loading">
                     <Loader2 className="size-4 animate-spin text-app-accent" />
                     Loading stats…
                 </div>
@@ -207,17 +195,13 @@ export default function PlayerPage() {
 
             {data && (
                 <>
-                    <div className="border-l-4 border-app-accent pl-4">
-                        <h1 className="font-display text-[2rem] font-extrabold tracking-[-0.02em] text-app-text mb-1">
-                            {data.full_name}
-                        </h1>
-                        <p className="text-app-muted text-[0.95rem] m-0">
-                            {data.position_type} · Career Statistics
-                        </p>
+                    <div className="accent-bar">
+                        <h1 className="page-title">{data.full_name}</h1>
+                        <p className="page-sub">{data.position_type} · Career Statistics</p>
                     </div>
 
                     {!hasHitting && !hasPitching && (
-                        <div className="text-center py-16 px-8 text-app-muted text-base border-2 border-dashed border-app-border rounded-xl">
+                        <div className="empty-state">
                             No career statistics available.
                         </div>
                     )}
@@ -243,7 +227,6 @@ export default function PlayerPage() {
                     )}
                 </>
             )}
-
         </div>
     )
 }
