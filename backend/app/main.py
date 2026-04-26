@@ -2,8 +2,10 @@
 MLB App — FastAPI Backend
 =========================
 Entry point for the FastAPI application.  Mounts all routers and configures
-CORS so the Angular dev server (localhost:4200) can reach the API.
+CORS so the React dev server and production frontend can reach the API.
 """
+
+import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,13 +19,15 @@ app = FastAPI(
 )
 
 # ---------------------------------------------------------------------------
-# CORS — allow the Angular dev server and any production origin as needed
+# CORS — origins are controlled via CORS_ORIGINS env var (comma-separated).
+# Falls back to localhost dev server when the env var is not set.
 # ---------------------------------------------------------------------------
+_raw = os.getenv("CORS_ORIGINS", "http://localhost:5173")
+origins = [o.strip() for o in _raw.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
