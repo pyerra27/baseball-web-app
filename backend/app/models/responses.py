@@ -132,3 +132,91 @@ class PlayerCareerStatsResponse(BaseModel):
     full_name: str
     position_type: str
     seasons: list[YearlyStats]
+
+
+# ---------------------------------------------------------------------------
+# Game Scores
+# ---------------------------------------------------------------------------
+
+class GameTeamInfo(BaseModel):
+    """One side of a game (home or away) with team identity and score."""
+    team_id: int
+    team_name: str
+    abbreviation: str
+    score: Optional[int] = None
+    is_winner: Optional[bool] = None
+
+
+class GameResult(BaseModel):
+    """A single game's result or current status."""
+    game_pk: int
+    game_date: str
+    status: str
+    away: GameTeamInfo
+    home: GameTeamInfo
+
+
+class ScoresResponse(BaseModel):
+    """Collection of game results for a given date."""
+    date: str
+    games: list[GameResult]
+
+
+# ---------------------------------------------------------------------------
+# Box Score
+# ---------------------------------------------------------------------------
+
+class PlayerGameHittingStats(BaseModel):
+    """A single batter's hitting line for one game."""
+    at_bats: Optional[int] = None
+    runs: Optional[int] = None
+    hits: Optional[int] = None
+    doubles: Optional[int] = None
+    triples: Optional[int] = None
+    home_runs: Optional[int] = None
+    rbi: Optional[int] = None
+    base_on_balls: Optional[int] = None
+    strike_outs: Optional[int] = None
+    left_on_base: Optional[int] = None
+    avg: Optional[str] = None
+
+
+class PlayerGamePitchingStats(BaseModel):
+    """A single pitcher's line for one game."""
+    innings_pitched: Optional[str] = None
+    hits: Optional[int] = None
+    runs: Optional[int] = None
+    earned_runs: Optional[int] = None
+    base_on_balls: Optional[int] = None
+    strike_outs: Optional[int] = None
+    home_runs: Optional[int] = None
+    era: Optional[str] = None
+
+
+class PlayerBoxScoreStats(BaseModel):
+    """One player's contribution in a single game."""
+    player_id: int
+    full_name: str
+    position_abbreviation: str
+    batting_order: Optional[int] = None
+    hitting: Optional[PlayerGameHittingStats] = None
+    pitching: Optional[PlayerGamePitchingStats] = None
+
+
+class TeamBoxScore(BaseModel):
+    """All players for one side of a game."""
+    team_id: int
+    team_name: str
+    abbreviation: str
+    score: Optional[int] = None
+    batters: list[PlayerBoxScoreStats]
+    pitchers: list[PlayerBoxScoreStats]
+
+
+class BoxScoreResponse(BaseModel):
+    """Full box score for a single game."""
+    game_pk: int
+    game_date: str
+    status: str
+    away: TeamBoxScore
+    home: TeamBoxScore

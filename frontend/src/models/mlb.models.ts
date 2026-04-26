@@ -94,3 +94,75 @@ export interface PlayerCareerStatsResponse {
     position_type: string
     seasons: YearlyStats[]
 }
+
+export interface GameTeamInfo {
+    team_id: number
+    team_name: string
+    abbreviation: string
+    score: number | null
+    is_winner: boolean | null
+}
+
+export interface GameResult {
+    game_pk: number
+    game_date: string
+    status: string
+    away: GameTeamInfo
+    home: GameTeamInfo
+}
+
+export interface ScoresResponse {
+    date: string
+    games: GameResult[]
+}
+
+export interface PlayerGameHittingStats {
+    at_bats: number | null
+    runs: number | null
+    hits: number | null
+    doubles: number | null
+    triples: number | null
+    home_runs: number | null
+    rbi: number | null
+    base_on_balls: number | null
+    strike_outs: number | null
+    left_on_base: number | null
+    avg: string | null
+}
+
+export interface PlayerGamePitchingStats {
+    innings_pitched: string | null
+    hits: number | null
+    runs: number | null
+    earned_runs: number | null
+    base_on_balls: number | null
+    strike_outs: number | null
+    home_runs: number | null
+    era: string | null
+}
+
+export interface PlayerBoxScoreStats {
+    player_id: number
+    full_name: string
+    position_abbreviation: string
+    batting_order: number | null
+    hitting: PlayerGameHittingStats | null
+    pitching: PlayerGamePitchingStats | null
+}
+
+export interface TeamBoxScore {
+    team_id: number
+    team_name: string
+    abbreviation: string
+    score: number | null
+    batters: PlayerBoxScoreStats[]
+    pitchers: PlayerBoxScoreStats[]
+}
+
+export interface BoxScoreResponse {
+    game_pk: number
+    game_date: string
+    status: string
+    away: TeamBoxScore
+    home: TeamBoxScore
+}

@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react'
 import { fetchTeams, fetchRoster } from '../../services/mlbApi'
 import type { Player } from '../../models/mlb.models'
 import { cn } from '@/lib/utils'
+import ScoresTicker from '../scores/ScoreCard'
 
 const CURRENT_YEAR = new Date().getFullYear()
 const YEARS = Array.from({ length: CURRENT_YEAR - 1899 }, (_, i) => CURRENT_YEAR - i)
@@ -120,6 +121,8 @@ export default function RosterPage() {
                     Select a team and season to view the full roster.
                 </p>
             </div>
+
+            <ScoresTicker />
 
             <div className="flex flex-wrap gap-6">
                 <div className="flex flex-col gap-1.5">

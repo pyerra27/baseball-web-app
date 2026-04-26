@@ -8,7 +8,7 @@ CORS so the Angular dev server (localhost:4200) can reach the API.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import teams, roster, players
+from app.routers import teams, roster, players, games
 
 app = FastAPI(
     title="MLB App API",
@@ -32,9 +32,12 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 # Routers
 # ---------------------------------------------------------------------------
-app.include_router(teams.router, prefix="/api/v1")
-app.include_router(roster.router, prefix="/api/v1")
-app.include_router(players.router, prefix="/api/v1")
+API_PREFIX = "/api/v1"
+
+app.include_router(teams.router, prefix=API_PREFIX)
+app.include_router(roster.router, prefix=API_PREFIX)
+app.include_router(players.router, prefix=API_PREFIX)
+app.include_router(games.router, prefix=API_PREFIX)
 
 
 @app.get("/health", tags=["Health"])
