@@ -4,7 +4,8 @@ import { useEffect, useRef } from 'react'
 import { ChevronLeft, Loader2 } from 'lucide-react'
 import { fetchPlayerCareerStats } from '../../services/mlbApi'
 import type { TeamSplit, YearlyStats } from '../../models/mlb.models'
-import { Button } from '@/components/ui/button'
+import clsx from 'clsx'
+import styles from './PlayerPage.module.css'
 
 type Col = { label: string; value: (s: TeamSplit) => string | number | null | undefined }
 
@@ -43,13 +44,13 @@ const PITCHING_COLS: Col[] = [
 
 function TeamCell({ split, season }: { split: TeamSplit; season: number }) {
     if (split.team_abbreviation === 'TOT') {
-        return <span className="text-app-muted">TOT</span>
+        return <span className={styles.combinedTeams}>TOT</span>
     }
     if (split.team_id && split.team_abbreviation) {
         return (
             <Link
                 to={`/roster?teamId=${split.team_id}&season=${season}`}
-                className="text-app-accent hover:underline"
+                className={styles.teamLink}
             >
                 {split.team_abbreviation}
             </Link>
@@ -72,22 +73,21 @@ function CareerTable({
     highlightRowRef: React.RefObject<HTMLTableRowElement>
 }) {
     return (
-        <div className="flex flex-col gap-3">
-            <h2 className="section-heading m-0">{title}</h2>
-            <div className="overflow-x-auto">
-                <table className="data-table">
+        <div className={styles.careerSection}>
+            <h2 className="section-heading">{title}</h2>
+            <div className={styles.tableScroll}>
+                <table className={clsx('data-table', styles.careerTable)}>
                     <thead>
                         <tr>
-                            <th className="th-c">Year</th>
-                            <th className="th-c">Team</th>
-                            {cols.map(c => <th key={c.label} className="th-c">{c.label}</th>)}
+                            <th>Year</th>
+                            <th>Team</th>
+                            {cols.map(c => <th key={c.label}>{c.label}</th>)}
                         </tr>
                     </thead>
                     <tbody>
                         {seasons.flatMap(yearly => {
                             const isHighlighted = yearly.season === highlightSeason
-                            const td = isHighlighted ? 'td-c-hl' : 'td-c-text'
-                            const tdSplit = isHighlighted ? 'td-c-sub-hl' : 'td-c-muted'
+                            const highlight = isHighlighted ? styles.highlightedRow : undefined
 
                             if (!yearly.totals) {
                                 const split = yearly.splits[0]
@@ -95,15 +95,14 @@ function CareerTable({
                                     <tr
                                         key={yearly.season}
                                         ref={isHighlighted ? highlightRowRef : undefined}
+                                        className={highlight}
                                     >
-                                        <td className={`${td} font-semibold${isHighlighted ? ' text-app-accent' : ''}`}>
-                                            {yearly.season}
-                                        </td>
-                                        <td className={td}>
+                                        <td className={styles.season}>{yearly.season}</td>
+                                        <td>
                                             <TeamCell split={split} season={yearly.season} />
                                         </td>
                                         {cols.map(c => (
-                                            <td key={c.label} className={td}>{c.value(split) ?? '—'}</td>
+                                            <td key={c.label}>{c.value(split) ?? '—'}</td>
                                         ))}
                                     </tr>
                                 )]
@@ -113,25 +112,25 @@ function CareerTable({
                                 <tr
                                     key={`${yearly.season}-tot`}
                                     ref={isHighlighted ? highlightRowRef : undefined}
+                                    className={clsx(styles.totalRow, highlight)}
                                 >
-                                    <td className={`${td} font-semibold${isHighlighted ? ' text-app-accent' : ''}`}>
-                                        {yearly.season}
-                                    </td>
-                                    <td className={`${td} font-semibold`}>TOT</td>
+                                    <td className={styles.season}>{yearly.season}</td>
+                                    <td>TOT</td>
                                     {cols.map(c => (
-                                        <td key={c.label} className={`${td} font-semibold`}>
-                                            {c.value(yearly.totals!) ?? '—'}
-                                        </td>
+                                        <td key={c.label}>{c.value(yearly.totals!) ?? '—'}</td>
                                     ))}
                                 </tr>,
                                 ...yearly.splits.map(split => (
-                                    <tr key={`${yearly.season}-${split.team_abbreviation}`}>
-                                        <td className={tdSplit} />
-                                        <td className={`${tdSplit} pl-6`}>
+                                    <tr
+                                        key={`${yearly.season}-${split.team_abbreviation}`}
+                                        className={clsx(styles.splitRow, highlight)}
+                                    >
+                                        <td />
+                                        <td className={styles.splitTeam}>
                                             <TeamCell split={split} season={yearly.season} />
                                         </td>
                                         {cols.map(c => (
-                                            <td key={c.label} className={tdSplit}>{c.value(split) ?? '—'}</td>
+                                            <td key={c.label}>{c.value(split) ?? '—'}</td>
                                         ))}
                                     </tr>
                                 )),
@@ -170,15 +169,10 @@ export default function PlayerPage() {
 
     return (
         <div className="page">
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(-1)}
-                className="self-start border-app-border bg-transparent text-app-muted hover:border-app-accent hover:text-app-accent hover:bg-transparent"
-            >
-                <ChevronLeft />
+            <button onClick={() => navigate(-1)} className={styles.backButton}>
+                <ChevronLeft size={14} />
                 Back
-            </Button>
+            </button>
 
             {query.isError && (
                 <div className="error-box">
@@ -188,7 +182,7 @@ export default function PlayerPage() {
 
             {query.isPending && (
                 <div className="loading">
-                    <Loader2 className="size-4 animate-spin text-app-accent" />
+                    <Loader2 size={16} className="spinner" />
                     Loading stats…
                 </div>
             )}

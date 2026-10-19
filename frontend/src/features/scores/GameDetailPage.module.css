@@ -1,0 +1,114 @@
+.backButton {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    height: 2rem;
+    margin-left: -0.5rem;
+    padding: 0 0.625rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    color: var(--app-muted);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    white-space: nowrap;
+    user-select: none;
+    transition: color 150ms ease, background-color 150ms ease;
+}
+
+.backButton:hover {
+    background: var(--app-surface-hover);
+    color: var(--app-text);
+}
+
+.backButton:active {
+    transform: translateY(1px);
+}
+
+.backButton:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--app-accent-muted);
+}
+
+/* ---- Away / home columns ---- */
+.teams {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+}
+
+@media (width < 64rem) {
+    .teams {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.teamSection {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.teamHeading {
+    padding-left: 0.75rem;
+    border-left: 4px solid var(--app-accent);
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--app-text);
+}
+
+.teamScore {
+    margin-left: 0.75rem;
+    font-size: 1.5rem;
+    color: var(--app-accent);
+}
+
+.statGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ---- Batting / pitching tables ---- */
+.tableScroll {
+    overflow-x: auto;
+}
+
+/* Player name column takes all spare width */
+.boxScoreTable th:first-child {
+    width: 100%;
+}
+
+.boxScoreTable td {
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--app-border-subtle);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    color: var(--app-muted);
+}
+
+.boxScoreTable td:first-child {
+    color: var(--app-text);
+}
+
+.battingOrder {
+    display: inline-block;
+    width: 1rem;
+    margin-right: 0.5rem;
+    text-align: right;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--app-muted);
+}
+
+.position {
+    margin-left: 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--app-muted);
+}

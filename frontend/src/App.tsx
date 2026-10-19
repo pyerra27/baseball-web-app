@@ -4,6 +4,7 @@ import { Sun, Moon } from 'lucide-react'
 import RosterPage from './features/roster/RosterPage'
 import PlayerPage from './features/player/PlayerPage'
 import GameDetailPage from './features/scores/GameDetailPage'
+import styles from './App.module.css'
 
 function useTheme() {
     const [dark, setDark] = useState(() => {
@@ -26,9 +27,9 @@ export default function App() {
             <button
                 onClick={toggle}
                 aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-                className="fixed top-4 right-4 z-50 p-2 rounded-md bg-app-surface border border-app-border text-app-muted hover:text-app-text hover:border-app-accent transition-colors duration-150"
+                className={styles.themeToggle}
             >
-                {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+                {dark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <Routes>
                 <Route path="/roster" element={<RosterPage />} />

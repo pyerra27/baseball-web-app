@@ -1,0 +1,103 @@
+.backButton {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    height: 1.75rem;
+    padding: 0 0.625rem;
+    border: 1px solid var(--app-border);
+    border-radius: var(--radius-md);
+    color: var(--app-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    user-select: none;
+    transition: color 150ms ease, border-color 150ms ease;
+}
+
+.backButton:hover {
+    border-color: var(--app-accent);
+    color: var(--app-accent);
+}
+
+.backButton:active {
+    transform: translateY(1px);
+}
+
+.backButton:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--app-accent-muted);
+}
+
+/* ---- Career table ---- */
+.careerSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.tableScroll {
+    overflow-x: auto;
+}
+
+.careerTable th {
+    padding-inline: 1rem;
+    text-align: center;
+}
+
+.careerTable th:first-child {
+    padding-left: 0;
+    text-align: left;
+}
+
+.careerTable td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--app-border-subtle);
+    text-align: center;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    color: var(--app-text);
+}
+
+.season {
+    font-weight: 600;
+}
+
+/* Combined line for a season split across multiple teams */
+.totalRow td {
+    font-weight: 600;
+}
+
+/* Per-team lines beneath a combined season */
+.splitRow td {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--app-muted);
+}
+
+.splitRow .splitTeam {
+    padding-left: 1.5rem;
+}
+
+/* The season the user arrived from (?season=) */
+.highlightedRow td {
+    background: var(--app-accent-muted);
+}
+
+.highlightedRow .season {
+    color: var(--app-accent);
+}
+
+/* ---- Team cell ---- */
+.combinedTeams {
+    color: var(--app-muted);
+}
+
+.teamLink {
+    color: var(--app-accent);
+}
+
+.teamLink:hover {
+    text-decoration: underline;
+}

@@ -1,0 +1,153 @@
+/* ---- Season / team pickers ---- */
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.select {
+    appearance: none;
+    min-width: 220px;
+    padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+    background-color: var(--app-surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    border: 1px solid var(--app-border);
+    border-radius: var(--radius-md);
+    color: var(--app-text);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.select:focus {
+    outline: none;
+    border-color: var(--app-accent);
+    box-shadow: 0 0 0 2px var(--app-accent-muted);
+}
+
+.select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ---- Roster ---- */
+.roster {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--app-border);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--app-muted);
+}
+
+.summary strong {
+    font-weight: 700;
+    color: var(--app-text);
+}
+
+.separator {
+    color: var(--app-border);
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.5rem;
+}
+
+@media (width < 48rem) {
+    .columns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.columnHeading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ---- Player table ---- */
+.noPlayers {
+    padding: 1rem 0;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--app-muted);
+}
+
+.numberHeader {
+    width: 3rem;
+}
+
+.playerTable .positionHeader {
+    width: 4.5rem;
+    text-align: right;
+}
+
+.playerTable tbody tr {
+    border-bottom: 1px solid var(--app-border-subtle);
+}
+
+.playerTable tbody tr:last-child {
+    border-bottom: 0;
+}
+
+.playerTable td {
+    padding: 0.625rem 0.75rem;
+    vertical-align: middle;
+}
+
+.playerTable tbody tr:hover td {
+    background: var(--app-surface-hover);
+}
+
+.jerseyNumber {
+    font-variant-numeric: tabular-nums;
+    color: var(--app-muted);
+}
+
+.playerLink:hover {
+    text-decoration: none;
+}
+
+.positionCell {
+    text-align: right;
+}
+
+/* ---- Position badge ---- */
+.badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.fielderBadge {
+    background: var(--app-badge-field-bg);
+    color: var(--app-badge-field);
+}
+
+.pitcherBadge {
+    background: var(--app-badge-pitcher-bg);
+    color: var(--app-badge-pitcher);
+}

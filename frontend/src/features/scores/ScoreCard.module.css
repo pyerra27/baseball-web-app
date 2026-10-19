@@ -1,0 +1,129 @@
+.ticker {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* ---- Today / Yesterday tabs ---- */
+.tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--app-border-subtle);
+}
+
+.tab {
+    margin-bottom: -1px;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid transparent;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--app-muted);
+    transition: color 150ms ease, border-color 150ms ease;
+}
+
+.tab:hover,
+.activeTab {
+    color: var(--app-text);
+}
+
+.activeTab {
+    border-bottom-color: var(--app-accent);
+}
+
+.tabDate {
+    margin-left: 0.25rem;
+    padding-bottom: 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    color: var(--app-muted);
+}
+
+.fetchingSpinner {
+    margin-bottom: 0.125rem;
+}
+
+.emptyMessage {
+    color: var(--app-muted);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+/* ---- Game cards ---- */
+.games {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.gameCard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 160px;
+    padding: 0.75rem 1rem;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: border-color 150ms ease;
+}
+
+.gameCard:hover {
+    border-color: var(--app-accent);
+}
+
+.divider {
+    height: 1px;
+    background: var(--app-border-subtle);
+}
+
+.status {
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--app-muted);
+}
+
+/* ---- One team's line in a game card ---- */
+.teamRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.abbreviation {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--app-muted);
+}
+
+.score {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--app-muted);
+}
+
+.winner .abbreviation {
+    font-weight: 700;
+    color: var(--app-text);
+}
+
+.winner .score {
+    font-weight: 800;
+    color: var(--app-text);
+}
