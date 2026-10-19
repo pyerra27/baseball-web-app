@@ -4,7 +4,8 @@ import { Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { fetchScores } from '../../services/mlbApi'
 import type { GameResult } from '../../models/mlb.models'
-import { cn } from '@/lib/utils'
+import clsx from 'clsx'
+import styles from './ScoreCard.module.css'
 
 type Tab = 'today' | 'yesterday'
 
@@ -18,22 +19,22 @@ function GameCard({ game }: { game: GameResult }) {
     const { away, home } = game
 
     return (
-        <Link to={`/game/${game.game_pk}`} className="no-underline">
-            <div className="game-card">
+        <Link to={`/game/${game.game_pk}`}>
+            <div className={styles.gameCard}>
                 <TeamRow
                     abbreviation={away.abbreviation}
                     score={away.score}
                     isWinner={away.is_winner}
                     isFinal={isFinal}
                 />
-                <div className="h-px bg-app-border-subtle" />
+                <div className={styles.divider} />
                 <TeamRow
                     abbreviation={home.abbreviation}
                     score={home.score}
                     isWinner={home.is_winner}
                     isFinal={isFinal}
                 />
-                <span className="text-[0.7rem] font-semibold tracking-wider uppercase text-app-muted mt-1">
+                <span className={styles.status}>
                     {game.status}
                 </span>
             </div>
@@ -54,19 +55,9 @@ function TeamRow({
 }) {
     const winner = isFinal && isWinner === true
     return (
-        <div className="flex items-center justify-between gap-4">
-            <span className={cn(
-                'font-display text-sm tracking-wider uppercase',
-                winner ? 'text-app-text font-bold' : 'text-app-muted font-semibold',
-            )}>
-                {abbreviation}
-            </span>
-            <span className={cn(
-                'font-display text-base tabular-nums',
-                winner ? 'text-app-text font-extrabold' : 'text-app-muted',
-            )}>
-                {score ?? '-'}
-            </span>
+        <div className={clsx(styles.teamRow, winner && styles.winner)}>
+            <span className={styles.abbreviation}>{abbreviation}</span>
+            <span className={styles.score}>{score ?? '-'}</span>
         </div>
     )
 }
@@ -100,29 +91,24 @@ export default function ScoresTicker() {
     const games = activeQuery.data?.games ?? []
 
     return (
-        <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3 border-b border-app-border-subtle">
+        <div className={styles.ticker}>
+            <div className={styles.tabs}>
                 {(['today', 'yesterday'] as Tab[]).map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={cn(
-                            'pb-2 text-xs font-semibold tracking-wider uppercase transition-colors border-b-2 -mb-px',
-                            activeTab === tab
-                                ? 'border-app-accent text-app-text'
-                                : 'border-transparent text-app-muted hover:text-app-text',
-                        )}
+                        className={clsx(styles.tab, activeTab === tab && styles.activeTab)}
                     >
                         {tab === 'today' ? "Today's Games" : 'Yesterday'}
                     </button>
                 ))}
                 {date && (
-                    <span className="ml-1 pb-2 text-xs text-app-muted font-semibold tracking-wide">
+                    <span className={styles.tabDate}>
                         {formatDate(date)}
                     </span>
                 )}
                 {activeQuery.isFetching && (
-                    <Loader2 className="size-3.5 animate-spin text-app-accent mb-0.5" />
+                    <Loader2 size={14} className={clsx('spinner', styles.fetchingSpinner)} />
                 )}
             </div>
 
@@ -133,13 +119,13 @@ export default function ScoresTicker() {
             )}
 
             {!activeQuery.isFetching && !activeQuery.isError && games.length === 0 && (
-                <p className="text-app-muted text-sm">
+                <p className={styles.emptyMessage}>
                     {activeTab === 'today' ? 'No games scheduled today.' : 'No games played.'}
                 </p>
             )}
 
             {games.length > 0 && (
-                <div className="flex flex-wrap gap-3">
+                <div className={styles.games}>
                     {games.map((game) => (
                         <GameCard key={game.game_pk} game={game} />
                     ))}

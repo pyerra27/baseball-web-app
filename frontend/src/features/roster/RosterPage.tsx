@@ -4,23 +4,16 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { fetchTeams, fetchRoster } from '../../services/mlbApi'
 import type { Player } from '../../models/mlb.models'
-import { cn } from '@/lib/utils'
+import clsx from 'clsx'
 import ScoresTicker from '../scores/ScoreCard'
+import styles from './RosterPage.module.css'
 
 const CURRENT_YEAR = new Date().getFullYear()
 const YEARS = Array.from({ length: CURRENT_YEAR - 1899 }, (_, i) => CURRENT_YEAR - i)
 
-const SELECT_ARROW = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`
-const selectStyle = { backgroundImage: SELECT_ARROW, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }
-
 function PosBadge({ isPitcher, abbr }: { isPitcher: boolean; abbr: string }) {
     return (
-        <span className={cn(
-            'inline-block px-2 py-0.5 rounded text-xs font-bold tracking-wider',
-            isPitcher
-                ? 'bg-app-badge-pitcher-bg text-app-badge-pitcher'
-                : 'bg-app-badge-field-bg text-app-badge-field'
-        )}>
+        <span className={clsx(styles.badge, isPitcher ? styles.pitcherBadge : styles.fielderBadge)}>
             {abbr}
         </span>
     )
@@ -29,37 +22,37 @@ function PosBadge({ isPitcher, abbr }: { isPitcher: boolean; abbr: string }) {
 function PlayerTable({ players, isPitcher, season }: { players: Player[]; isPitcher: boolean; season: number }) {
     if (players.length === 0) {
         return (
-            <div className="text-app-muted text-sm py-4">
+            <div className={styles.noPlayers}>
                 No {isPitcher ? 'pitchers' : 'position players'} found.
             </div>
         )
     }
     return (
-        <table className="data-table">
+        <table className={clsx('data-table', styles.playerTable)}>
             <thead>
                 <tr>
-                    <th className="th w-12">#</th>
-                    <th className="th">Name</th>
-                    <th className="th w-[4.5rem] text-right">
+                    <th className={styles.numberHeader}>#</th>
+                    <th>Name</th>
+                    <th className={styles.positionHeader}>
                         {isPitcher ? 'Role' : 'Pos'}
                     </th>
                 </tr>
             </thead>
             <tbody>
                 {players.map((player) => (
-                    <tr key={player.id} className="group border-b border-app-border-subtle last:border-0">
-                        <td className="roster-td tabular-nums text-app-muted">
+                    <tr key={player.id}>
+                        <td className={styles.jerseyNumber}>
                             {player.jersey_number}
                         </td>
-                        <td className="roster-td">
+                        <td>
                             <Link
                                 to={`/player/${player.id}?season=${season}`}
-                                className="app-link no-underline"
+                                className={clsx('app-link', styles.playerLink)}
                             >
                                 {player.full_name}
                             </Link>
                         </td>
-                        <td className="roster-td text-right">
+                        <td className={styles.positionCell}>
                             <PosBadge isPitcher={isPitcher} abbr={player.position_abbreviation} />
                         </td>
                     </tr>
@@ -112,13 +105,12 @@ export default function RosterPage() {
 
             <ScoresTicker />
 
-            <div className="flex flex-wrap gap-6">
-                <div className="flex flex-col gap-1.5">
+            <div className={styles.filters}>
+                <div className={styles.field}>
                     <label htmlFor="season-select" className="field-label">Season</label>
                     <select
                         id="season-select"
-                        className="app-select"
-                        style={selectStyle}
+                        className={styles.select}
                         value={season}
                         onChange={handleSeasonChange}
                         disabled={teamsQuery.isFetching}
@@ -129,12 +121,11 @@ export default function RosterPage() {
                     </select>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
+                <div className={styles.field}>
                     <label htmlFor="team-select" className="field-label">Team</label>
                     <select
                         id="team-select"
-                        className="app-select"
-                        style={selectStyle}
+                        className={styles.select}
                         value={teamId ?? ''}
                         onChange={handleTeamChange}
                         disabled={teamsQuery.isFetching || !teamsQuery.data?.length}
@@ -157,7 +148,7 @@ export default function RosterPage() {
 
             {rosterQuery.isFetching && (
                 <div className="loading">
-                    <Loader2 className="size-4 animate-spin text-app-accent" />
+                    <Loader2 size={16} className="spinner" />
                     Loading roster…
                 </div>
             )}
@@ -169,25 +160,25 @@ export default function RosterPage() {
             )}
 
             {rosterQuery.data && !rosterQuery.isFetching && (
-                <div className="flex flex-col gap-6">
-                    <div className="flex items-center gap-3 flex-wrap text-sm text-app-muted pb-4 border-b border-app-border">
-                        <span><strong className="text-app-text font-bold">{rosterQuery.data.position_players.length}</strong> Position Players</span>
-                        <span className="text-app-border">·</span>
-                        <span><strong className="text-app-text font-bold">{rosterQuery.data.pitchers.length}</strong> Pitchers</span>
-                        <span className="text-app-border">·</span>
-                        <span><strong className="text-app-text font-bold">{totalPlayers}</strong> Total</span>
+                <div className={styles.roster}>
+                    <div className={styles.summary}>
+                        <span><strong>{rosterQuery.data.position_players.length}</strong> Position Players</span>
+                        <span className={styles.separator}>·</span>
+                        <span><strong>{rosterQuery.data.pitchers.length}</strong> Pitchers</span>
+                        <span className={styles.separator}>·</span>
+                        <span><strong>{totalPlayers}</strong> Total</span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-10 max-md:grid-cols-1">
+                    <div className={styles.columns}>
                         <section>
-                            <h2 className="section-heading flex items-center gap-2 mb-4">
+                            <h2 className={clsx('section-heading', styles.columnHeading)}>
                                 <span>🧢</span> Position Players
                             </h2>
                             <PlayerTable players={rosterQuery.data.position_players} isPitcher={false} season={season} />
                         </section>
 
                         <section>
-                            <h2 className="section-heading flex items-center gap-2 mb-4">
+                            <h2 className={clsx('section-heading', styles.columnHeading)}>
                                 <span>⚾</span> Pitchers
                             </h2>
                             <PlayerTable players={rosterQuery.data.pitchers} isPitcher={true} season={season} />
