@@ -1,0 +1,50 @@
+# Exact runtime dependency versions for mlb-app-backend (Python 3.14, Linux).
+# Used by the Render build. See the README for how to regenerate.
+annotated-doc==0.0.4
+    # via fastapi
+annotated-types==0.7.0
+    # via pydantic
+anyio==4.13.0
+    # via starlette, watchfiles
+baseball-api-wrapper==0.1.0
+    # via mlb-app-backend
+certifi==2026.2.25
+    # via requests
+charset-normalizer==3.4.7
+    # via requests
+click==8.3.2
+    # via uvicorn
+fastapi==0.135.3
+    # via mlb-app-backend
+h11==0.16.0
+    # via uvicorn
+httptools==0.7.1
+    # via uvicorn
+idna==3.11
+    # via anyio, requests
+pydantic==2.12.5
+    # via fastapi, mlb-app-backend
+pydantic-core==2.41.5
+    # via pydantic
+python-dotenv==1.2.2
+    # via uvicorn
+pyyaml==6.0.3
+    # via uvicorn
+requests==2.33.1
+    # via baseball-api-wrapper
+starlette==1.0.0
+    # via fastapi
+typing-extensions==4.15.0
+    # via fastapi, pydantic, pydantic-core, typing-inspection
+typing-inspection==0.4.2
+    # via fastapi, pydantic
+urllib3==2.6.3
+    # via requests
+uvicorn==0.43.0
+    # via mlb-app-backend
+uvloop==0.22.1
+    # via uvicorn
+watchfiles==1.1.1
+    # via uvicorn
+websockets==16.0
+    # via uvicorn
