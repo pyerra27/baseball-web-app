@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom'
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import GameDetailPage from '../../features/scores/GameDetailPage'
@@ -157,23 +157,27 @@ describe('GameDetailPage', () => {
         expect(link).toHaveAttribute('href', '/player/592450?season=2024')
     })
 
+    // Both teams get their own batting and pitching tables, so header text
+    // appears once per team — scope the checks to the away team's section.
     it('renders batting stat column headers', async () => {
         vi.mocked(mlbApi.fetchBoxScore).mockResolvedValue(BOX_SCORE)
         renderGameDetailPage()
         await waitFor(() => expect(screen.getByText('Juan Soto')).toBeInTheDocument())
-        expect(screen.getByText('AB')).toBeInTheDocument()
-        expect(screen.getByText('RBI')).toBeInTheDocument()
-        expect(screen.getByText('AVG')).toBeInTheDocument()
-        expect(screen.getByText('LOB')).toBeInTheDocument()
+        const away = within(screen.getByText('New York Yankees').closest('section')!)
+        expect(away.getByText('AB')).toBeInTheDocument()
+        expect(away.getByText('RBI')).toBeInTheDocument()
+        expect(away.getByText('AVG')).toBeInTheDocument()
+        expect(away.getByText('LOB')).toBeInTheDocument()
     })
 
     it('renders pitching stat column headers', async () => {
         vi.mocked(mlbApi.fetchBoxScore).mockResolvedValue(BOX_SCORE)
         renderGameDetailPage()
         await waitFor(() => expect(screen.getByText('Gerrit Cole')).toBeInTheDocument())
-        expect(screen.getByText('IP')).toBeInTheDocument()
-        expect(screen.getByText('ERA')).toBeInTheDocument()
-        expect(screen.getByText('ER')).toBeInTheDocument()
+        const away = within(screen.getByText('New York Yankees').closest('section')!)
+        expect(away.getByText('IP')).toBeInTheDocument()
+        expect(away.getByText('ERA')).toBeInTheDocument()
+        expect(away.getByText('ER')).toBeInTheDocument()
     })
 
     it('calls fetchBoxScore with the numeric gamePk from the URL', async () => {

@@ -64,10 +64,11 @@ describe('ScoresTicker', () => {
         vi.clearAllMocks()
     })
 
-    it('renders the section heading immediately', () => {
+    it('renders the Today and Yesterday tabs immediately', () => {
         vi.mocked(mlbApi.fetchScores).mockReturnValue(new Promise(() => {}))
         renderScoresTicker()
-        expect(screen.getByText(/yesterday's scores/i)).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /today's games/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /yesterday/i })).toBeInTheDocument()
     })
 
     it('renders a card for each game after data loads', async () => {
