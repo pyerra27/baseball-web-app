@@ -1,0 +1,48 @@
+.workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    transition: opacity 150ms ease;
+}
+
+/* A new player is loading. Keep the previous chart in place, dimmed. */
+.stale {
+    opacity: 0.5;
+}
+
+.playerHeader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+}
+
+.playerName {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--app-text);
+}
+
+.position {
+    color: var(--app-muted);
+    font-size: 0.875rem;
+}
+
+.careerLink {
+    margin-left: auto;
+    color: var(--app-accent);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.careerLink:hover {
+    text-decoration: underline;
+}
+
+/* Narrower than the global .form-select default, which suits team names.
+   The element selector outranks that class regardless of stylesheet order. */
+select.yearSelect {
+    min-width: 7.5rem;
+}
