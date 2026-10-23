@@ -1,10 +1,12 @@
 /**
- * Direct labels at the end of each line on a comparison chart.
+ * Labels drawn on the plot itself.
  *
- * The legend always names the lines; these labels add each player's name
- * where their line ends. A label that would overlap another or run off the
- * chart is left out instead of being nudged away from its line. The legend
- * and tooltip still identify that line.
+ * End labels name each player where their line ends. The legend always
+ * names the lines too, so a label that would overlap another or run off the
+ * chart is left out instead of being nudged away from its line.
+ *
+ * Bar values put each bar's value on top, but only when every value fits.
+ * Otherwise none show, and the tooltip and table still have them.
  */
 
 const SUFFIXES = new Set(['jr', 'jr.', 'sr', 'sr.', 'ii', 'iii', 'iv'])
@@ -108,4 +110,45 @@ export function placeEndLabels(labels: EndLabel[], frame: LabelFrame): LabelPlac
     })
 
     return { gutter, visible }
+}
+
+// ---------------------------------------------------------------------------
+// Bar values
+// ---------------------------------------------------------------------------
+
+/** Space between the bars of one season. */
+export const BAR_GAP = 2
+/** The widest a bar gets. */
+export const MAX_BAR_SIZE = 24
+/** Space on each side of a season's bars, as a fraction of its band. Recharts' default. */
+export const BAR_CATEGORY_GAP = 0.1
+/** Space kept between neighboring values. */
+const VALUE_SPACING = 2
+
+export interface BarFrame {
+    /** Width of the plot area, without the y-axis. */
+    plotWidth: number
+    /** Number of seasons, or career years, on the x-axis. */
+    count: number
+    /** Number of players, each with one bar per season. */
+    seriesCount: number
+}
+
+/**
+ * Whether every bar's value fits above it without running into its
+ * neighbors. The bar size mirrors how Recharts lays out grouped bars, so
+ * the check matches what it draws.
+ */
+export function barValuesFit(texts: string[], frame: BarFrame): boolean {
+    const { plotWidth, count, seriesCount } = frame
+    if (count < 1 || seriesCount < 1) return false
+
+    const band = plotWidth / count
+    const raw = (band - 2 * band * BAR_CATEGORY_GAP - (seriesCount - 1) * BAR_GAP) / seriesCount
+    const size = Math.min(MAX_BAR_SIZE, raw > 1 ? Math.round(raw) : raw)
+    // Values sit centered over their bars, so they collide when wider than
+    // the distance between neighboring bar centers.
+    const pitch = seriesCount === 1 ? band : size + BAR_GAP
+    const widest = Math.max(0, ...texts.map(text => text.length * CHAR_WIDTH))
+    return widest + VALUE_SPACING <= pitch
 }

@@ -135,6 +135,13 @@
     border-radius: 1px;
 }
 
+/* Bars get a small square instead, mirroring the bar. */
+.legendSwatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
+
 /* ---- End labels ----
    Player names where each line ends. A ring in the surface color keeps
    them legible where they cross another line. */

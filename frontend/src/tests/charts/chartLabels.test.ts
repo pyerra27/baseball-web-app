@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { labelNames, placeEndLabels, shortName } from '../../features/charts/endLabels'
-import type { LabelFrame } from '../../features/charts/endLabels'
+import { barValuesFit, labelNames, placeEndLabels, shortName } from '../../features/charts/chartLabels'
+import type { LabelFrame } from '../../features/charts/chartLabels'
 
 // A 720px chart with six x positions and a 0–50 value axis. The last
 // position sits 32px from the right edge before any gutter.
@@ -79,5 +79,27 @@ describe('placeEndLabels', () => {
     it('hides a label too long to fit without making room for it', () => {
         const placement = placeEndLabels([{ text: 'x'.repeat(30), index: 5, value: 40 }], FRAME)
         expect(placement).toEqual({ gutter: 0, visible: [false] })
+    })
+})
+
+describe('barValuesFit', () => {
+    // About the plot width of a 720px chart.
+    const PLOT_WIDTH = 670
+
+    it('fits values for one player, who has the whole season to spread into', () => {
+        expect(barValuesFit(['45', '8', '1,021'], { plotWidth: PLOT_WIDTH, count: 4, seriesCount: 1 })).toBe(true)
+        expect(barValuesFit(['62'], { plotWidth: PLOT_WIDTH, count: 30, seriesCount: 1 })).toBe(true)
+    })
+
+    it('fits short values for three players on a short range', () => {
+        expect(barValuesFit(['52', '62', '8'], { plotWidth: PLOT_WIDTH, count: 4, seriesCount: 3 })).toBe(true)
+    })
+
+    it("doesn't fit values wider than a bar when players' bars sit side by side", () => {
+        expect(barValuesFit(['.312'], { plotWidth: PLOT_WIDTH, count: 4, seriesCount: 3 })).toBe(false)
+    })
+
+    it("doesn't fit anything for three players over thirty seasons", () => {
+        expect(barValuesFit(['62'], { plotWidth: PLOT_WIDTH, count: 30, seriesCount: 3 })).toBe(false)
     })
 })

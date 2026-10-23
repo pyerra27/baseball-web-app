@@ -2,10 +2,10 @@ import '@testing-library/jest-dom'
 
 import { describe, it, expect } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
-import SeasonLineChart, { SeasonTooltipContent } from '../../features/charts/SeasonLineChart'
-import type { ChartSeries } from '../../features/charts/SeasonLineChart'
+import SeasonChart, { SeasonTooltipContent } from '../../features/charts/SeasonChart'
+import type { ChartKind, ChartSeries } from '../../features/charts/SeasonChart'
 import { findStat } from '../../features/charts/playerSeries'
-import type { Align, SeriesPoint, StatDef } from '../../features/charts/playerSeries'
+import type { SeriesPoint, StatDef } from '../../features/charts/playerSeries'
 
 const HR = findStat('hitting', 'home_runs')!
 const AVG = findStat('hitting', 'avg')!
@@ -26,22 +26,28 @@ const TROUT = line(545361, 'Mike Trout', [point(2019, 45), point(2020, 17), poin
 const JUDGE = line(592450, 'Aaron Judge', [point(2019, 27), point(2020, 9), point(2021, 39), point(2022, 62)], 2)
 
 /** Render the chart over the full range of the series' points. */
-function renderChart(series: ChartSeries[], stat: StatDef = HR, align: Align = 'season') {
+function renderChart(series: ChartSeries[], stat: StatDef = HR, kind: ChartKind = 'line') {
     const xs = series.flatMap(entry => entry.points.map(p => p.x))
     return render(
-        <SeasonLineChart
+        <SeasonChart
+            kind={kind}
             series={series}
             from={Math.min(...xs)}
             to={Math.max(...xs)}
-            align={align}
+            align="season"
             stat={stat}
             title="Test chart"
         />,
     )
 }
 
-function renderOne(points: SeriesPoint[], stat: StatDef = HR) {
-    return renderChart([line(1, 'Mike Trout', points)], stat)
+function renderOne(points: SeriesPoint[], stat: StatDef = HR, kind: ChartKind = 'line') {
+    return renderChart([line(1, 'Mike Trout', points)], stat, kind)
+}
+
+/** A season-by-season run of points, `count` long, starting in 1990. */
+function seasons(count: number, value: (index: number) => number): SeriesPoint[] {
+    return Array.from({ length: count }, (_, index) => point(1990 + index, value(index)))
 }
 
 /** Text drawn on the plot itself: the best-season callout or the end labels, but not the axis ticks. */
@@ -56,7 +62,7 @@ function tickLabels(container: HTMLElement, axis: 'xAxis' | 'yAxis'): string[] {
         .map(tick => tick.textContent ?? '')
 }
 
-describe('SeasonLineChart with one player', () => {
+describe('SeasonChart lines with one player', () => {
     it('draws a dot for each season with a value', () => {
         const { container } = renderOne(HOME_RUNS)
         expect(container.querySelectorAll('.recharts-line-dot')).toHaveLength(3)
@@ -114,7 +120,7 @@ describe('SeasonLineChart with one player', () => {
     })
 })
 
-describe('SeasonLineChart comparing players', () => {
+describe('SeasonChart lines comparing players', () => {
     it('draws one line per player in its own color', () => {
         const { container } = renderChart([TROUT, JUDGE])
         const curves = [...container.querySelectorAll('.recharts-line-curve')]
@@ -154,7 +160,7 @@ describe('SeasonTooltipContent', () => {
     it('adds the calendar season by career year', () => {
         const third = { ...point(2013, 27), x: 3 }
         render(<SeasonTooltipContent row={{ x: 3, points: [third] }} series={[TROUT]} align="career" unit="HR" />)
-        expect(screen.getByText('Career year 3 · 2013 · LAA')).toBeInTheDocument()
+        expect(screen.getByText('Career Year 3 · 2013 · LAA')).toBeInTheDocument()
     })
 
     it('marks a running total carried through a missed season', () => {
@@ -178,5 +184,62 @@ describe('SeasonTooltipContent', () => {
         expect(screen.getByText('Mike Trout')).toBeInTheDocument()
         expect(screen.getByText('—')).toBeInTheDocument()
         expect(screen.getByText('Aaron Judge')).toBeInTheDocument()
+    })
+})
+
+describe('SeasonChart bars', () => {
+    /** The fill of each drawn bar, in drawing order. */
+    function barFills(container: HTMLElement): (string | null)[] {
+        return [...container.querySelectorAll('.recharts-bar-rectangle path')].map(bar => bar.getAttribute('fill'))
+    }
+
+    it("draws a bar for each season with a value, and none for a missed season", () => {
+        const { container } = renderOne(HOME_RUNS, HR, 'bar')
+        expect(barFills(container)).toEqual(Array(3).fill('var(--chart-series-1)'))
+        expect(tickLabels(container, 'xAxis')).toEqual(['2019', '2020', '2021', '2022'])
+    })
+
+    it("fills each player's bars with their color", () => {
+        const { container } = renderChart([TROUT, JUDGE], HR, 'bar')
+        expect(barFills(container)).toEqual([
+            ...Array(4).fill('var(--chart-series-1)'),
+            ...Array(4).fill('var(--chart-series-2)'),
+        ])
+    })
+
+    it('starts rate stats at zero', () => {
+        const { container } = renderOne([point(2021, 0.262, '.262'), point(2022, 0.32, '.320')], AVG, 'bar')
+        expect(tickLabels(container, 'yAxis')[0]).toBe('.000')
+    })
+
+    it('puts every value on its bar when they fit, without a separate callout', () => {
+        const { container } = renderOne(HOME_RUNS, HR, 'bar')
+        expect(chartLabels(container)).toEqual(['30', '40', '35'])
+    })
+
+    it("labels each player's bars from their own seasons, even around a missed one", () => {
+        const judge = line(592450, 'Aaron Judge', [point(2019, 27), point(2021, 39), point(2022, 62)], 2)
+        const { container } = renderChart([TROUT, judge], HR, 'bar')
+        expect(chartLabels(container).sort()).toEqual(['45', '17', '8', '40', '27', '39', '62'].sort())
+    })
+
+    it('leaves values off a comparison too long for them to fit', () => {
+        const players = [1, 2, 3].map(slot => line(slot, `Player ${slot}`, seasons(30, index => 10 + index), slot))
+        const { container } = renderChart(players, HR, 'bar')
+        expect(container.querySelectorAll('.recharts-bar-rectangle')).toHaveLength(90)
+        expect(chartLabels(container)).toEqual([])
+    })
+
+    it("calls out one player's best season when the values don't fit", () => {
+        const { container } = renderOne(seasons(60, index => index % 50), HR, 'bar')
+        expect(chartLabels(container)).toEqual(['49'])
+    })
+
+    it('shows a legend with square keys, and no end labels, when comparing', () => {
+        const { container } = renderChart([TROUT, JUDGE], HR, 'bar')
+        const legend = screen.getByRole('list', { name: 'Legend' })
+        expect(legend.querySelectorAll('[class*="legendSwatch"]')).toHaveLength(2)
+        expect(chartLabels(container)).not.toContain('Trout')
+        expect(chartLabels(container)).not.toContain('Judge')
     })
 })

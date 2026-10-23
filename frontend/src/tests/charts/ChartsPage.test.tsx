@@ -587,3 +587,50 @@ describe('ChartsPage comparing players', () => {
         expect(screen.getByText("Couldn't load player")).toBeInTheDocument()
     })
 })
+
+describe('ChartsPage line and bar charts', () => {
+    function viewButtons() {
+        return within(screen.getByRole('group', { name: 'View' })).getAllByRole('button')
+    }
+
+    function drawnBars() {
+        return document.querySelectorAll('.recharts-bar-rectangle')
+    }
+
+    it('offers Line, Bar, and Table, starting on Line', async () => {
+        await renderPlayer(TROUT)
+        expect(viewButtons().map(button => button.textContent)).toEqual(['Line', 'Bar', 'Table'])
+        expect(screen.getByRole('button', { name: 'Line' })).toHaveAttribute('aria-pressed', 'true')
+        expect(drawnBars()).toHaveLength(0)
+    })
+
+    it('draws bars and records the choice in the URL', async () => {
+        const user = userEvent.setup()
+        await renderPlayer(TROUT)
+
+        await user.click(screen.getByRole('button', { name: 'Bar' }))
+
+        expect(screen.getByTestId('location')).toHaveTextContent('chart=bar')
+        expect(screen.getByRole('button', { name: 'Bar' })).toHaveAttribute('aria-pressed', 'true')
+        expect(drawnBars()).toHaveLength(3)
+    })
+
+    it('goes from the table back to the chart when Bar is picked', async () => {
+        const user = userEvent.setup()
+        await renderPlayer(TROUT)
+
+        await user.click(screen.getByRole('button', { name: 'Table' }))
+        expect(screen.getByRole('table')).toBeInTheDocument()
+
+        await user.click(screen.getByRole('button', { name: 'Bar' }))
+
+        expect(screen.queryByRole('table')).not.toBeInTheDocument()
+        expect(drawnBars()).toHaveLength(3)
+    })
+
+    it('opens on bars when the URL asks for them', async () => {
+        await renderPlayers([TROUT, JUDGE], '&chart=bar')
+        expect(screen.getByRole('button', { name: 'Bar' })).toHaveAttribute('aria-pressed', 'true')
+        expect(drawnBars()).toHaveLength(5)
+    })
+})

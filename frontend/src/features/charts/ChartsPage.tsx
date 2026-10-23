@@ -8,8 +8,8 @@ import PlayerPicker from './PlayerPicker'
 import PlayerChips from './PlayerChips'
 import type { ChipPlayer } from './PlayerChips'
 import ChartCard from './ChartCard'
-import SeasonLineChart from './SeasonLineChart'
-import type { ChartSeries } from './SeasonLineChart'
+import SeasonChart from './SeasonChart'
+import type { ChartKind, ChartSeries } from './SeasonChart'
 import {
     DEFAULT_STAT_KEY,
     GROUPS,
@@ -50,7 +50,7 @@ interface LoadedPlayer {
  * three players.
  *
  * Everything that defines the chart lives in the URL, so a chart can be
- * shared or bookmarked: /charts?players=&group=&stat=&show=&align=&from=&to=
+ * shared or bookmarked: /charts?players=&group=&stat=&show=&align=&from=&to=&chart=
  * `players` lists player ids by color slot; see playerSlots.
  */
 export default function ChartsPage() {
@@ -147,6 +147,12 @@ export default function ChartsPage() {
     )
 }
 
+/** Ways to draw the chart, offered beside Table on the chart card. */
+const CHART_CHOICES: { value: ChartKind; label: string }[] = [
+    { value: 'line', label: 'Line' },
+    { value: 'bar', label: 'Bar' },
+]
+
 interface PlayerChartProps {
     /** Players whose stats have loaded, in slot order. */
     players: LoadedPlayer[]
@@ -179,6 +185,7 @@ function PlayerChart({ players, searchParams, updateParams, stale }: PlayerChart
     const running = counting && searchParams.get('show') === 'total'
     const align = parseAlign(searchParams.get('align'))
     const byCareer = align === 'career'
+    const kind: ChartKind = searchParams.get('chart') === 'bar' ? 'bar' : 'line'
 
     // A player with no seasons in the stat's group is left off the chart.
     const withValues = players.map(player => ({ ...player, values: seasonValues(player.career, stat) }))
@@ -302,7 +309,8 @@ function PlayerChart({ players, searchParams, updateParams, stale }: PlayerChart
                 subtitle={`${names} · ${range}`}
                 fileName={slugify(names, title, range)}
                 chart={
-                    <SeasonLineChart
+                    <SeasonChart
+                        kind={kind}
                         series={series}
                         from={from}
                         to={to}
@@ -311,6 +319,11 @@ function PlayerChart({ players, searchParams, updateParams, stale }: PlayerChart
                         title={`${title} for ${names}, ${range}`}
                     />
                 }
+                chartChoices={{
+                    options: CHART_CHOICES,
+                    value: kind,
+                    onChange: next => updateParams({ chart: next === 'bar' ? 'bar' : null }),
+                }}
                 columns={table.columns}
                 rows={table.rows}
                 valueColumns={series.length}

@@ -21,12 +21,17 @@ interface ChartCardProps {
     valueColumns?: number
     /** Header row plus data rows for the CSV download. */
     csvRows: Cell[][]
+    /** Ways to draw the chart, offered in place of a single Chart button. */
+    chartChoices?: ChartChoices
 }
 
-const VIEWS: { value: View; label: string }[] = [
-    { value: 'chart', label: 'Chart' },
-    { value: 'table', label: 'Table' },
-]
+interface ChartChoices {
+    /** For example Line and Bar. */
+    options: { value: string; label: string }[]
+    /** The option the chart is drawn with now. */
+    value: string
+    onChange: (value: string) => void
+}
 
 /**
  * A titled card that shows a chart or its table, and saves either as a PNG
@@ -41,6 +46,7 @@ export default function ChartCard({
     rows,
     valueColumns = 1,
     csvRows,
+    chartChoices,
 }: ChartCardProps) {
     const titleId = useId()
     const cardRef = useRef<HTMLElement>(null)
@@ -50,6 +56,23 @@ export default function ChartCard({
 
     const firstValueColumn = columns.length - valueColumns
     const valueClass = (index: number) => (index >= firstValueColumn ? styles.valueCell : undefined)
+
+    // Each toggle button shows the chart, drawn a given way, or the table.
+    const chartButtons = chartChoices
+        ? chartChoices.options.map(option => ({
+            key: option.value,
+            label: option.label,
+            pressed: view === 'chart' && chartChoices.value === option.value,
+            select: () => {
+                setView('chart')
+                if (option.value !== chartChoices.value) chartChoices.onChange(option.value)
+            },
+        }))
+        : [{ key: 'chart', label: 'Chart', pressed: view === 'chart', select: () => setView('chart') }]
+    const toggleButtons = [
+        ...chartButtons,
+        { key: 'table', label: 'Table', pressed: view === 'table', select: () => setView('table') },
+    ]
 
     async function savePng() {
         if (!cardRef.current) return
@@ -84,15 +107,15 @@ export default function ChartCard({
                 {/* Controls are left out of the saved image. */}
                 <div className={styles.actions} data-export-exclude>
                     <div className={styles.viewToggle} role="group" aria-label="View">
-                        {VIEWS.map(option => (
+                        {toggleButtons.map(button => (
                             <button
-                                key={option.value}
+                                key={button.key}
                                 type="button"
-                                aria-pressed={view === option.value}
-                                className={clsx(styles.toggleButton, view === option.value && styles.toggleButtonActive)}
-                                onClick={() => setView(option.value)}
+                                aria-pressed={button.pressed}
+                                className={clsx(styles.toggleButton, button.pressed && styles.toggleButtonActive)}
+                                onClick={button.select}
                             >
-                                {option.label}
+                                {button.label}
                             </button>
                         ))}
                     </div>
