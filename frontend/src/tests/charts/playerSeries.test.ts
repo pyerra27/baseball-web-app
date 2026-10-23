@@ -7,14 +7,18 @@ import type {
     YearlyStats,
 } from '../../models/mlb.models'
 import {
+    alignValues,
     availableGroups,
     bestSeason,
     defaultGroup,
-    fillMissingSeasons,
     findStat,
+    formatInnings,
+    isCountingStat,
+    parseAlign,
     parseGroup,
     parseInnings,
     resolveRange,
+    runningTotals,
     seasonValues,
     tickFormatter,
     toNumber,
@@ -185,12 +189,58 @@ describe('seasonValues', () => {
     })
 })
 
-describe('fillMissingSeasons', () => {
-    it('adds an empty row for each missed season in the range', () => {
-        const rows = fillMissingSeasons(seasonValues(HITTER, HR), 2019, 2023)
-        expect(rows.map(row => row.season)).toEqual([2019, 2020, 2021, 2022, 2023])
-        expect(rows[1]).toEqual({ season: 2020, value: null, display: '—', teams: '', hasStats: false })
-        expect(rows[2].value).toBe(41)
+describe('alignValues and parseAlign', () => {
+    it('places seasons by year', () => {
+        expect(alignValues(seasonValues(HITTER, HR), 'season').map(point => point.x)).toEqual([2019, 2021, 2023])
+    })
+
+    it('counts career years from the first season and keeps missed seasons as gaps', () => {
+        const points = alignValues(seasonValues(HITTER, HR), 'career')
+        expect(points.map(point => point.x)).toEqual([1, 3, 5])
+        expect(points[1].season).toBe(2021)
+    })
+
+    it('reads the align param, defaulting to seasons', () => {
+        expect(parseAlign('career')).toBe('career')
+        expect(parseAlign(null)).toBe('season')
+        expect(parseAlign('age')).toBe('season')
+    })
+})
+
+describe('isCountingStat', () => {
+    it('accepts counts and innings but not rates', () => {
+        expect(isCountingStat(HR)).toBe(true)
+        expect(isCountingStat(IP)).toBe(true)
+        expect(isCountingStat(AVG)).toBe(false)
+        expect(isCountingStat(ERA)).toBe(false)
+    })
+})
+
+describe('formatInnings', () => {
+    it('writes whole innings and outs', () => {
+        expect(formatInnings(180 + 1 / 3)).toBe('180.1')
+        expect(formatInnings(2345 + 2 / 3)).toBe('2,345.2')
+        expect(formatInnings(7)).toBe('7.0')
+    })
+})
+
+describe('runningTotals', () => {
+    it('adds up each season and carries the total through missed seasons', () => {
+        const totals = runningTotals(seasonValues(HITTER, HR), HR)
+        expect(totals.map(entry => entry.season)).toEqual([2019, 2020, 2021, 2022, 2023])
+        expect(totals.map(entry => entry.value)).toEqual([30, 30, 71, 71, 96])
+        expect(totals.map(entry => entry.hasStats)).toEqual([true, false, true, false, true])
+        expect(totals[1].teams).toBe('')
+        expect(totals[4]).toMatchObject({ display: '96', teams: 'NYY / SD' })
+    })
+
+    it('adds innings in thirds and writes them in baseball notation', () => {
+        const totals = runningTotals(seasonValues(PITCHER, IP), IP)
+        expect(totals.map(entry => entry.display)).toEqual(['200.1', '200.1', '400.2', '601.1'])
+    })
+
+    it('returns nothing without seasons', () => {
+        expect(runningTotals([], HR)).toEqual([])
     })
 })
 

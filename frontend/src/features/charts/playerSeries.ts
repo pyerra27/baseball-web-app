@@ -144,8 +144,21 @@ export interface SeasonValue {
     display: string
     /** Team(s) for the season, e.g. "LAA" or "NYY / SD". */
     teams: string
-    /** False for a season inside the range with no MLB stats. */
+    /** False for a season the player missed. A running total still carries a value through it. */
     hasStats: boolean
+}
+
+/** A season's value placed on the chart's x-axis. */
+export interface SeriesPoint extends SeasonValue {
+    /** The season, or the career year (1 = first season) when aligned by career. */
+    x: number
+}
+
+/** Line players up by calendar season, or by career year. */
+export type Align = 'season' | 'career'
+
+export function parseAlign(value: string | null): Align {
+    return value === 'career' ? 'career' : 'season'
 }
 
 /** Groups (hitting, pitching) the player has at least one season of. */
@@ -179,17 +192,56 @@ export function seasonValues(career: PlayerCareerStatsResponse, stat: StatDef): 
 }
 
 /**
- * Add an empty row for every season in [from, to] the player has no stats
- * for, so a chart breaks its line there instead of bridging the gap.
+ * Place each season on the x-axis. By career, a player's first season in
+ * the stat's group is year 1, and a missed season stays a gap.
  * `values` must be sorted oldest first.
  */
-export function fillMissingSeasons(values: SeasonValue[], from: number, to: number): SeasonValue[] {
+export function alignValues(values: SeasonValue[], align: Align): SeriesPoint[] {
+    const first = values[0]?.season ?? 0
+    return values.map(entry => ({
+        ...entry,
+        x: align === 'career' ? entry.season - first + 1 : entry.season,
+    }))
+}
+
+/** Stats that add up across seasons, so a running total means something. */
+export function isCountingStat(stat: StatDef): boolean {
+    return stat.format === 'count' || stat.format === 'innings'
+}
+
+/** Innings in baseball notation, counted in outs: 180⅓ is "180.1". */
+export function formatInnings(innings: number): string {
+    const outs = Math.round(innings * 3)
+    return `${Math.floor(outs / 3).toLocaleString('en-US')}.${outs % 3}`
+}
+
+function formatCount(total: number): string {
+    return Math.round(total).toLocaleString('en-US')
+}
+
+/**
+ * Career-to-date totals, one entry per season from the first to the last.
+ * A missed season carries the previous total, so the line stays flat
+ * instead of breaking. `values` must be sorted oldest first.
+ */
+export function runningTotals(values: SeasonValue[], stat: StatDef): SeasonValue[] {
+    if (values.length === 0) return []
     const bySeason = new Map(values.map(entry => [entry.season, entry]))
-    const rows: SeasonValue[] = []
-    for (let season = from; season <= to; season++) {
-        rows.push(bySeason.get(season) ?? { season, value: null, display: '—', teams: '', hasStats: false })
+    const format = stat.format === 'innings' ? formatInnings : formatCount
+    const totals: SeasonValue[] = []
+    let total = 0
+    for (let season = values[0].season; season <= values[values.length - 1].season; season++) {
+        const entry = bySeason.get(season)
+        total += entry?.value ?? 0
+        totals.push({
+            season,
+            value: total,
+            display: format(total),
+            teams: entry?.teams ?? '',
+            hasStats: entry !== undefined,
+        })
     }
-    return rows
+    return totals
 }
 
 /**
@@ -206,8 +258,8 @@ export function resolveRange(seasons: number[], from: number | null, to: number 
 }
 
 /** The season to call out: the highest value, or the lowest for ERA and WHIP. */
-export function bestSeason(values: SeasonValue[], stat: StatDef): SeasonValue | null {
-    let best: SeasonValue | null = null
+export function bestSeason<T extends SeasonValue>(values: T[], stat: StatDef): T | null {
+    let best: T | null = null
     for (const entry of values) {
         if (entry.value === null) continue
         if (best === null || best.value === null) {

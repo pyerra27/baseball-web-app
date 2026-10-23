@@ -10,15 +10,19 @@ function byName(a: Player, b: Player): number {
 }
 
 interface PlayerPickerProps {
-    selectedPlayerId: number | null
-    onSelect: (playerId: number) => void
+    /** Players already on the chart. They can't be added again. */
+    addedPlayerIds: number[]
+    /** False once the chart is full. */
+    canAdd: boolean
+    onAdd: (playerId: number) => void
 }
 
 /**
- * Season, team, and player selects for choosing who to chart. Uses the
- * roster page's query keys, so teams and rosters come from the same cache.
+ * Season, team, and player selects for adding players to the chart. Uses
+ * the roster page's query keys, so teams and rosters come from the same
+ * cache. The player select resets after each pick, ready for the next.
  */
-export default function PlayerPicker({ selectedPlayerId, onSelect }: PlayerPickerProps) {
+export default function PlayerPicker({ addedPlayerIds, canAdd, onAdd }: PlayerPickerProps) {
     const [season, setSeason] = useState(CURRENT_YEAR)
     const [teamId, setTeamId] = useState<number | null>(null)
 
@@ -36,10 +40,10 @@ export default function PlayerPicker({ selectedPlayerId, onSelect }: PlayerPicke
     const roster = rosterQuery.data
     const positionPlayers = roster ? [...roster.position_players].sort(byName) : []
     const pitchers = roster ? [...roster.pitchers].sort(byName) : []
-    const selectedIsListed = [...positionPlayers, ...pitchers].some(player => player.id === selectedPlayerId)
 
     let playerPrompt = 'Select a player'
-    if (teamId === null) playerPrompt = 'Select a team first'
+    if (!canAdd) playerPrompt = 'Remove a player to add another'
+    else if (teamId === null) playerPrompt = 'Select a team first'
     else if (rosterQuery.isFetching) playerPrompt = 'Loading roster…'
 
     function handleSeasonChange(e: ChangeEvent<HTMLSelectElement>) {
@@ -84,26 +88,30 @@ export default function PlayerPicker({ selectedPlayerId, onSelect }: PlayerPicke
                 </div>
 
                 <div className="form-field">
-                    <label htmlFor="chart-player-select" className="field-label">Player</label>
+                    <label htmlFor="chart-player-select" className="field-label">Add player</label>
                     <select
                         id="chart-player-select"
                         className="form-select"
-                        value={selectedIsListed ? String(selectedPlayerId) : ''}
-                        onChange={e => onSelect(Number(e.target.value))}
-                        disabled={!roster || rosterQuery.isFetching}
+                        value=""
+                        onChange={e => onAdd(Number(e.target.value))}
+                        disabled={!canAdd || !roster || rosterQuery.isFetching}
                     >
                         <option value="" disabled>{playerPrompt}</option>
                         {positionPlayers.length > 0 && (
                             <optgroup label="Position Players">
                                 {positionPlayers.map(player => (
-                                    <option key={player.id} value={player.id}>{player.full_name}</option>
+                                    <option key={player.id} value={player.id} disabled={addedPlayerIds.includes(player.id)}>
+                                        {player.full_name}
+                                    </option>
                                 ))}
                             </optgroup>
                         )}
                         {pitchers.length > 0 && (
                             <optgroup label="Pitchers">
                                 {pitchers.map(player => (
-                                    <option key={player.id} value={player.id}>{player.full_name}</option>
+                                    <option key={player.id} value={player.id} disabled={addedPlayerIds.includes(player.id)}>
+                                        {player.full_name}
+                                    </option>
                                 ))}
                             </optgroup>
                         )}

@@ -236,7 +236,7 @@ describe('PlayerPage', () => {
         vi.mocked(mlbApi.fetchPlayerCareerStats).mockResolvedValue(HITTING_PLAYER)
         renderPlayerPage()
         const link = await screen.findByRole('link', { name: /chart these stats/i })
-        expect(link).toHaveAttribute('href', '/charts?playerId=660271')
+        expect(link).toHaveAttribute('href', '/charts?players=660271')
     })
 
     it('hides the chart link when the player has no stats', async () => {

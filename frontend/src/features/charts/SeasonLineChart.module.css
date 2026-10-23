@@ -1,4 +1,8 @@
+/* The legend, when there is one, sits above the plot. */
 .root {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
     width: 100%;
     min-width: 0;
 }
@@ -48,12 +52,12 @@
     font-weight: 700;
 }
 
-/* A short stroke in the series color identifies the line. */
+/* A short stroke in the series color identifies the line. The color is
+   set inline, per series. */
 .tooltipKey {
     width: 12px;
     height: 2px;
     border-radius: 1px;
-    background: var(--chart-series-1);
 }
 
 .tooltipUnit {
@@ -71,4 +75,72 @@
 .tooltipMeta {
     margin-top: 0.125rem;
     color: var(--app-muted);
+}
+
+/* With two or more players: the season and unit, then one row per player
+   with key, value, name, and team. */
+.tooltipHeader {
+    margin-bottom: 0.25rem;
+    color: var(--app-muted);
+}
+
+.tooltipRows {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+}
+
+/* Each row's cells sit directly in the grid, so the columns line up. */
+.tooltipRow {
+    display: contents;
+}
+
+.tooltipRowValue {
+    color: var(--app-text);
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.tooltipRowName {
+    color: var(--app-text);
+}
+
+.tooltipRowMeta {
+    color: var(--app-muted);
+}
+
+/* ---- Legend (two or more players) ---- */
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    list-style: none;
+    color: var(--app-text);
+    font-size: 0.875rem;
+}
+
+.legendItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* A short stroke in the series color, mirroring the line. */
+.legendKey {
+    width: 16px;
+    height: 2px;
+    border-radius: 1px;
+}
+
+/* ---- End labels ----
+   Player names where each line ends. A ring in the surface color keeps
+   them legible where they cross another line. */
+.endLabel {
+    paint-order: stroke;
+    stroke: var(--app-surface);
+    stroke-width: 3px;
+    stroke-linejoin: round;
 }

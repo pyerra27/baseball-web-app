@@ -120,7 +120,8 @@
     border-bottom: 0;
 }
 
-.table th:last-child,
-.table td:last-child {
+/* Value columns line up on the right. Two classes outrank the global
+   .data-table th rule that left-aligns headers. */
+.table .valueCell {
     text-align: right;
 }

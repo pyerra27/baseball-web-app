@@ -17,6 +17,8 @@ interface ChartCardProps {
     /** Columns and rows of the table view, the chart's accessible equivalent. */
     columns: string[]
     rows: Cell[][]
+    /** How many columns at the end hold values. They're right-aligned. Defaults to 1. */
+    valueColumns?: number
     /** Header row plus data rows for the CSV download. */
     csvRows: Cell[][]
 }
@@ -30,12 +32,24 @@ const VIEWS: { value: View; label: string }[] = [
  * A titled card that shows a chart or its table, and saves either as a PNG
  * of the card or the data as CSV.
  */
-export default function ChartCard({ title, subtitle, fileName, chart, columns, rows, csvRows }: ChartCardProps) {
+export default function ChartCard({
+    title,
+    subtitle,
+    fileName,
+    chart,
+    columns,
+    rows,
+    valueColumns = 1,
+    csvRows,
+}: ChartCardProps) {
     const titleId = useId()
     const cardRef = useRef<HTMLElement>(null)
     const [view, setView] = useState<View>('chart')
     const [savingPng, setSavingPng] = useState(false)
     const [error, setError] = useState<string | null>(null)
+
+    const firstValueColumn = columns.length - valueColumns
+    const valueClass = (index: number) => (index >= firstValueColumn ? styles.valueCell : undefined)
 
     async function savePng() {
         if (!cardRef.current) return
@@ -115,13 +129,15 @@ export default function ChartCard({ title, subtitle, fileName, chart, columns, r
                     <table className={clsx('data-table', styles.table)}>
                         <thead>
                             <tr>
-                                {columns.map(column => <th key={column} scope="col">{column}</th>)}
+                                {columns.map((column, index) => (
+                                    <th key={column} scope="col" className={valueClass(index)}>{column}</th>
+                                ))}
                             </tr>
                         </thead>
                         <tbody>
                             {rows.map(row => (
                                 <tr key={String(row[0])}>
-                                    {row.map((cell, index) => <td key={index}>{cell}</td>)}
+                                    {row.map((cell, index) => <td key={index} className={valueClass(index)}>{cell}</td>)}
                                 </tr>
                             ))}
                         </tbody>

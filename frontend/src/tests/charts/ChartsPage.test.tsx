@@ -133,6 +133,25 @@ const NO_STATS_PLAYER: PlayerCareerStatsResponse = {
     seasons: [],
 }
 
+// Debuted before Trout's first season here, so a comparison spans 2017–2022.
+const JUDGE: PlayerCareerStatsResponse = {
+    player_id: 592450,
+    full_name: 'Aaron Judge',
+    position_type: 'Outfielder',
+    seasons: [
+        {
+            season: 2022,
+            splits: [{ team_id: 147, team_abbreviation: 'NYY', hitting: hitting({ home_runs: 62 }), pitching: null }],
+            totals: null,
+        },
+        {
+            season: 2017,
+            splits: [{ team_id: 147, team_abbreviation: 'NYY', hitting: hitting({ home_runs: 52 }), pitching: null }],
+            totals: null,
+        },
+    ],
+}
+
 const ANGELS: Team = {
     id: 108,
     name: 'Los Angeles Angels',
@@ -166,10 +185,13 @@ const ANGELS_ROSTER: RosterResponse = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Renders the current query string so tests can check what the page wrote to the URL. */
+/**
+ * Renders the current query string so tests can check what the page wrote
+ * to the URL. Decoded, so the players list reads "1,2" rather than "1%2C2".
+ */
 function LocationProbe() {
     const location = useLocation()
-    return <div data-testid="location">{location.search}</div>
+    return <div data-testid="location">{decodeURIComponent(location.search)}</div>
 }
 
 function renderChartsPage(search = '') {
@@ -195,10 +217,26 @@ function renderChartsPage(search = '') {
     )
 }
 
+/** Serve these careers by id. Any other id fails as Not Found. */
+function serveCareers(careers: PlayerCareerStatsResponse[]) {
+    vi.mocked(mlbApi.fetchPlayerCareerStats).mockImplementation(async id => {
+        const career = careers.find(entry => entry.player_id === id)
+        if (!career) throw new Error('Not Found')
+        return career
+    })
+}
+
+/** Put players on the chart through the URL, in slot order, and wait for their chips. */
+async function renderPlayers(careers: PlayerCareerStatsResponse[], extraSearch = '') {
+    serveCareers(careers)
+    renderChartsPage(`?players=${careers.map(career => career.player_id).join(',')}${extraSearch}`)
+    for (const career of careers) {
+        await screen.findByRole('button', { name: `Remove ${career.full_name}` })
+    }
+}
+
 async function renderPlayer(career: PlayerCareerStatsResponse, extraSearch = '') {
-    vi.mocked(mlbApi.fetchPlayerCareerStats).mockResolvedValue(career)
-    renderChartsPage(`?playerId=${career.player_id}${extraSearch}`)
-    await screen.findByRole('heading', { name: career.full_name })
+    await renderPlayers([career], extraSearch)
 }
 
 function readBlobText(blob: Blob): Promise<string> {
@@ -339,18 +377,18 @@ describe('ChartsPage', () => {
 
         await screen.findByRole('option', { name: 'Los Angeles Angels' })
         await user.selectOptions(screen.getByLabelText('Team'), '108')
-        await waitFor(() => expect(screen.getByLabelText('Player')).toBeEnabled())
-        await user.selectOptions(screen.getByLabelText('Player'), '545361')
+        await waitFor(() => expect(screen.getByLabelText('Add player')).toBeEnabled())
+        await user.selectOptions(screen.getByLabelText('Add player'), '545361')
 
         expect(await screen.findByRole('heading', { name: 'Home Runs' })).toBeInTheDocument()
         expect(mlbApi.fetchRoster).toHaveBeenCalledWith(108, CURRENT_YEAR)
         expect(mlbApi.fetchPlayerCareerStats).toHaveBeenCalledWith(545361)
-        expect(screen.getByTestId('location')).toHaveTextContent('playerId=545361')
+        expect(screen.getByTestId('location')).toHaveTextContent('players=545361')
     })
 
     it('shows an error when the stats fail to load', async () => {
         vi.mocked(mlbApi.fetchPlayerCareerStats).mockRejectedValue(new Error('Not Found'))
-        renderChartsPage('?playerId=1')
+        renderChartsPage('?players=1')
         expect(await screen.findByText(/failed to load player stats: not found/i)).toBeInTheDocument()
     })
 
@@ -399,5 +437,153 @@ describe('ChartsPage', () => {
 
         expect(await screen.findByRole('alert')).toHaveTextContent(/could not save the image/i)
         expect(anchorClicks).toHaveLength(0)
+    })
+})
+
+describe('ChartsPage comparing players', () => {
+    it('charts two players from the URL with a legend', async () => {
+        await renderPlayers([TROUT, JUDGE])
+        const legend = screen.getByRole('list', { name: 'Legend' })
+        expect(within(legend).getAllByRole('listitem').map(item => item.textContent)).toEqual(['Mike Trout', 'Aaron Judge'])
+        expect(screen.getByText('Mike Trout vs. Aaron Judge · 2017–2022')).toBeInTheDocument()
+    })
+
+    it('adds a player with the picker', async () => {
+        const user = userEvent.setup()
+        serveCareers([JUDGE, TROUT])
+        renderChartsPage('?players=592450')
+        await screen.findByRole('button', { name: 'Remove Aaron Judge' })
+
+        await screen.findByRole('option', { name: 'Los Angeles Angels' })
+        await user.selectOptions(screen.getByLabelText('Team'), '108')
+        await waitFor(() => expect(screen.getByLabelText('Add player')).toBeEnabled())
+        await user.selectOptions(screen.getByLabelText('Add player'), '545361')
+
+        expect(await screen.findByRole('button', { name: 'Remove Mike Trout' })).toBeInTheDocument()
+        expect(screen.getByTestId('location')).toHaveTextContent('players=592450,545361')
+    })
+
+    it("doesn't offer a player who is already on the chart", async () => {
+        const user = userEvent.setup()
+        await renderPlayer(TROUT)
+
+        await screen.findByRole('option', { name: 'Los Angeles Angels' })
+        await user.selectOptions(screen.getByLabelText('Team'), '108')
+        await waitFor(() => expect(screen.getByLabelText('Add player')).toBeEnabled())
+
+        expect(screen.getByRole('option', { name: 'Mike Trout' })).toBeDisabled()
+    })
+
+    it('keeps the other players in their slots, and colors, when one is removed', async () => {
+        const user = userEvent.setup()
+        await renderPlayers([TROUT, JUDGE])
+
+        await user.click(screen.getByRole('button', { name: 'Remove Mike Trout' }))
+
+        expect(screen.getByTestId('location')).toHaveTextContent('players=,592450')
+        expect(screen.queryByRole('button', { name: 'Remove Mike Trout' })).not.toBeInTheDocument()
+        expect(screen.getByText('Aaron Judge · 2017–2022')).toBeInTheDocument()
+        expect(document.querySelector('.recharts-line-dot')).toHaveAttribute('fill', 'var(--chart-series-2)')
+    })
+
+    it('stops adding players at three', async () => {
+        await renderPlayers([TROUT, JUDGE, PITCHER])
+        expect(screen.getByLabelText('Add player')).toBeDisabled()
+        expect(screen.getByRole('option', { name: 'Remove a player to add another' })).toBeInTheDocument()
+    })
+
+    it('compares players in a table with a column each', async () => {
+        const user = userEvent.setup()
+        await renderPlayers([TROUT, JUDGE])
+
+        await user.click(screen.getByRole('button', { name: 'Table' }))
+
+        expect(screen.getAllByRole('columnheader').map(header => header.textContent)).toEqual(['Season', 'Mike Trout', 'Aaron Judge'])
+        expect(tableRows()).toEqual([
+            ['2017', '—', '52'],
+            ['2019', '45', '—'],
+            ['2021', '8', '—'],
+            ['2022', '40', '62'],
+        ])
+    })
+
+    it('downloads every player-season as CSV', async () => {
+        const user = userEvent.setup()
+        await renderPlayers([TROUT, JUDGE])
+
+        await user.click(screen.getByRole('button', { name: 'Download CSV' }))
+
+        expect(anchorClicks).toEqual([{ href: 'blob:mock', download: 'mike-trout-vs-aaron-judge-home-runs-2017-2022.csv' }])
+        expect(await readBlobText(objectUrlBlobs[0])).toBe(
+            'Player,Season,Team,HR\r\n' +
+            'Mike Trout,2019,LAA,45\r\n' +
+            'Mike Trout,2021,LAA,8\r\n' +
+            'Mike Trout,2022,LAA,40\r\n' +
+            'Aaron Judge,2017,NYY,52\r\n' +
+            'Aaron Judge,2022,NYY,62\r\n',
+        )
+    })
+
+    it('lines players up by career year', async () => {
+        const user = userEvent.setup()
+        await renderPlayers([TROUT, JUDGE])
+
+        await user.selectOptions(screen.getByLabelText('Align by'), 'career')
+
+        expect(screen.getByTestId('location')).toHaveTextContent('align=career')
+        expect(optionLabels(screen.getByLabelText('From'))).toEqual(['Year 1', 'Year 3', 'Year 4', 'Year 6'])
+        expect(screen.getByText('Mike Trout vs. Aaron Judge · Career Years 1–6')).toBeInTheDocument()
+
+        await user.click(screen.getByRole('button', { name: 'Table' }))
+
+        expect(screen.getAllByRole('columnheader').map(header => header.textContent)).toEqual(['Year', 'Mike Trout', 'Aaron Judge'])
+        expect(tableRows()).toEqual([
+            ['1', '45', '52'],
+            ['3', '8', '—'],
+            ['4', '40', '—'],
+            ['6', '—', '62'],
+        ])
+    })
+
+    it('shows career running totals for counting stats', async () => {
+        const user = userEvent.setup()
+        await renderPlayer(TROUT)
+
+        await user.selectOptions(screen.getByLabelText('Show'), 'total')
+
+        expect(screen.getByRole('heading', { name: 'Career Home Runs' })).toBeInTheDocument()
+        expect(screen.getByTestId('location')).toHaveTextContent('show=total')
+
+        await user.click(screen.getByRole('button', { name: 'Table' }))
+
+        expect(screen.getAllByRole('columnheader').map(header => header.textContent)).toEqual(['Season', 'Team', 'Career HR'])
+        // Trout missed 2020, so his total carries through it.
+        expect(tableRows()).toEqual([
+            ['2019', 'LAA', '45'],
+            ['2020', '—', '45'],
+            ['2021', 'LAA', '53'],
+            ['2022', 'LAA', '93'],
+        ])
+    })
+
+    it('offers running totals only for counting stats', async () => {
+        await renderPlayer(TROUT, '&group=hitting&stat=avg&show=total')
+        expect(screen.getByRole('heading', { name: 'Batting Average' })).toBeInTheDocument()
+        expect(screen.getByRole('option', { name: 'Running total' })).toBeDisabled()
+    })
+
+    it('notes a player with no stats in the chosen group', async () => {
+        await renderPlayers([TROUT, PITCHER], '&group=pitching&stat=strike_outs')
+        expect(screen.getByText('Mike Trout has no pitching stats.')).toBeInTheDocument()
+        expect(screen.getByText('Gerrit Cole · 2019–2024')).toBeInTheDocument()
+    })
+
+    it('still charts the other players when one fails to load', async () => {
+        serveCareers([TROUT])
+        renderChartsPage('?players=545361,1')
+
+        expect(await screen.findByText(/failed to load player stats: not found/i)).toBeInTheDocument()
+        expect(await screen.findByRole('heading', { name: 'Home Runs' })).toBeInTheDocument()
+        expect(screen.getByText("Couldn't load player")).toBeInTheDocument()
     })
 })

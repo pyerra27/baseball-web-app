@@ -195,7 +195,7 @@ export default function PlayerPage() {
                             <p className="page-sub">{data.position_type} · Career Statistics</p>
                         </div>
                         {(hasHitting || hasPitching) && (
-                            <Link to={`/charts?playerId=${data.player_id}`} className={styles.chartLink}>
+                            <Link to={`/charts?players=${data.player_id}`} className={styles.chartLink}>
                                 <ChartLine size={14} />
                                 Chart these stats
                             </Link>
