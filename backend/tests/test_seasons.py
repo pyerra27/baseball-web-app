@@ -9,8 +9,7 @@ Coverage:
 from fastapi.testclient import TestClient
 
 from app.main import app
-from tests.conftest import mock_today
-
+from tests.helpers import mock_today
 
 client = TestClient(app)
 

@@ -6,9 +6,9 @@ These act as a stable contract between the backend and frontend,
 insulating the frontend from raw MLB Stats API response shapes.
 """
 
-from pydantic import BaseModel
 from typing import Optional
 
+from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
 # Seasons

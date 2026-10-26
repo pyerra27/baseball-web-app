@@ -4,13 +4,12 @@ Players Router
 Endpoints for retrieving individual player statistics.
 """
 
+from baseball_api_wrapper import MLBStatsAPIError
 from fastapi import APIRouter, HTTPException, Path
 
-from baseball_api_wrapper.client import MLBStatsAPIError
-
 from app.constants import MLB_FIRST_SEASON, validate_season
-from app.models.responses import PlayerStatsResponse, PlayerCareerStatsResponse
-from app.services.players_service import fetch_player_stats, fetch_player_career_stats
+from app.models.responses import PlayerCareerStatsResponse, PlayerStatsResponse
+from app.services.players_service import fetch_player_career_stats, fetch_player_stats
 
 router = APIRouter(prefix="/players", tags=["Players"])
 

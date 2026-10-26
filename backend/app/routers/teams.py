@@ -4,8 +4,8 @@ Teams Router
 Endpoints for retrieving MLB team data.
 """
 
+from baseball_api_wrapper import MLBStatsAPIError
 from fastapi import APIRouter, HTTPException, Query
-from baseball_api_wrapper.client import MLBStatsAPIError
 
 from app.constants import MLB_FIRST_SEASON, validate_season
 from app.models.responses import TeamResponse

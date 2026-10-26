@@ -6,15 +6,14 @@ Coverage:
     * Router layer  — HTTP status codes, response shape, query validation.
 """
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
+
+from baseball_api_wrapper import MLBStatsAPIError
 from fastapi.testclient import TestClient
 
-from baseball_api_wrapper.client import MLBStatsAPIError
 from app.main import app
-from app.services.teams_service import fetch_teams, _transform_team
-from tests.conftest import make_mock_mlb_client, make_raw_team, mock_today
-
+from app.services.teams_service import _transform_team, fetch_teams
+from tests.helpers import make_mock_mlb_client, make_raw_team, mock_today
 
 client = TestClient(app)
 
