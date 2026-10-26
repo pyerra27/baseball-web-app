@@ -4,6 +4,11 @@
  * including snake_case field names as returned by the FastAPI JSON serializer.
  */
 
+/** The newest season the API accepts. */
+export interface CurrentSeasonResponse {
+    season: number
+}
+
 export interface Team {
     id: number
     name: string

@@ -7,7 +7,7 @@ Endpoints for retrieving MLB team data.
 from fastapi import APIRouter, HTTPException, Query
 from baseball_api_wrapper.client import MLBStatsAPIError
 
-from app.constants import MLB_FIRST_SEASON, current_mlb_season
+from app.constants import MLB_FIRST_SEASON, validate_season
 from app.models.responses import TeamResponse
 from app.services.teams_service import fetch_teams
 
@@ -19,7 +19,6 @@ def get_teams(
     season: int = Query(
         ...,
         ge=MLB_FIRST_SEASON,
-        le=current_mlb_season(),
         description="The MLB season year (1900 – current).",
     ),
 ):
@@ -27,6 +26,7 @@ def get_teams(
     Return all active MLB teams for the specified season, sorted
     alphabetically by team name.
     """
+    validate_season(season)
     try:
         return fetch_teams(season=season)
     except MLBStatsAPIError as exc:

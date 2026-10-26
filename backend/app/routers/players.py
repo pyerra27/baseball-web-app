@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException, Path
 
 from baseball_api_wrapper.client import MLBStatsAPIError
 
-from app.constants import MLB_FIRST_SEASON, current_mlb_season
+from app.constants import MLB_FIRST_SEASON, validate_season
 from app.models.responses import PlayerStatsResponse, PlayerCareerStatsResponse
 from app.services.players_service import fetch_player_stats, fetch_player_career_stats
 
@@ -21,7 +21,6 @@ def get_player_stats(
     season: int = Path(
         ...,
         ge=MLB_FIRST_SEASON,
-        le=current_mlb_season(),
         description="The MLB season year (1900 – current).",
     ),
 ):
@@ -31,6 +30,7 @@ def get_player_stats(
     Both stat groups are attempted; the response will only populate the
     groups for which data is available.
     """
+    validate_season(season)
     try:
         return fetch_player_stats(player_id=player_id, season=season)
     except KeyError as exc:

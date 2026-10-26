@@ -8,7 +8,6 @@ import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 import * as htmlToImage from 'html-to-image'
 import ChartsPage from '../../features/charts/ChartsPage'
 import * as mlbApi from '../../services/mlbApi'
-import { CURRENT_YEAR } from '../../utils/seasons'
 import type {
     HittingStats,
     PitchingStats,
@@ -18,6 +17,7 @@ import type {
 } from '../../models/mlb.models'
 
 vi.mock('../../services/mlbApi', () => ({
+    fetchCurrentSeason: vi.fn(),
     fetchPlayerCareerStats: vi.fn(),
     fetchTeams: vi.fn(),
     fetchRoster: vi.fn(),
@@ -164,9 +164,12 @@ const ANGELS: Team = {
     division_name: 'American League West',
 }
 
+// The newest season the API accepts. Before Opening Day 2026, still 2025.
+const CURRENT_SEASON = 2025
+
 const ANGELS_ROSTER: RosterResponse = {
     team_id: 108,
-    season: CURRENT_YEAR,
+    season: CURRENT_SEASON,
     pitchers: [],
     position_players: [
         {
@@ -280,6 +283,7 @@ beforeAll(() => {
 })
 
 beforeEach(() => {
+    vi.mocked(mlbApi.fetchCurrentSeason).mockReset().mockResolvedValue({ season: CURRENT_SEASON })
     vi.mocked(mlbApi.fetchPlayerCareerStats).mockReset()
     vi.mocked(mlbApi.fetchTeams).mockReset().mockResolvedValue([ANGELS])
     vi.mocked(mlbApi.fetchRoster).mockReset().mockResolvedValue(ANGELS_ROSTER)
@@ -376,12 +380,15 @@ describe('ChartsPage', () => {
         renderChartsPage()
 
         await screen.findByRole('option', { name: 'Los Angeles Angels' })
+        expect(screen.getByLabelText('Season')).toHaveValue(String(CURRENT_SEASON))
+        expect(screen.queryByRole('option', { name: String(CURRENT_SEASON + 1) })).not.toBeInTheDocument()
         await user.selectOptions(screen.getByLabelText('Team'), '108')
         await waitFor(() => expect(screen.getByLabelText('Add player')).toBeEnabled())
         await user.selectOptions(screen.getByLabelText('Add player'), '545361')
 
         expect(await screen.findByRole('heading', { name: 'Home Runs' })).toBeInTheDocument()
-        expect(mlbApi.fetchRoster).toHaveBeenCalledWith(108, CURRENT_YEAR)
+        expect(mlbApi.fetchTeams).toHaveBeenCalledWith(CURRENT_SEASON)
+        expect(mlbApi.fetchRoster).toHaveBeenCalledWith(108, CURRENT_SEASON)
         expect(mlbApi.fetchPlayerCareerStats).toHaveBeenCalledWith(545361)
         expect(screen.getByTestId('location')).toHaveTextContent('players=545361')
     })

@@ -21,6 +21,7 @@ from app.services.players_service import (
     _build_hitting,
     _build_pitching,
 )
+from tests.conftest import mock_today
 
 
 client = TestClient(app)
@@ -352,6 +353,13 @@ class TestPlayersRouter:
         ):
             response = client.get("/api/v1/players/660271/stats/2024")
         assert response.status_code == 503
+
+    def test_season_after_current_returns_422(self):
+        """Before Opening Day, the new calendar year should be rejected with a readable message."""
+        with mock_today(2026, 3, 19):
+            response = client.get("/api/v1/players/660271/stats/2026")
+        assert response.status_code == 422
+        assert response.json()["detail"] == "season must be 2025 or earlier"
 
 
 # ---------------------------------------------------------------------------

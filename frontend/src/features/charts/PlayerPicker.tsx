@@ -3,7 +3,7 @@ import type { ChangeEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchRoster, fetchTeams } from '../../services/mlbApi'
 import type { Player } from '../../models/mlb.models'
-import { CURRENT_YEAR, SEASON_YEARS } from '../../utils/seasons'
+import { useSeasons } from '../../utils/seasons'
 
 function byName(a: Player, b: Player): number {
     return a.full_name.localeCompare(b.full_name)
@@ -23,18 +23,23 @@ interface PlayerPickerProps {
  * cache. The player select resets after each pick, ready for the next.
  */
 export default function PlayerPicker({ addedPlayerIds, canAdd, onAdd }: PlayerPickerProps) {
-    const [season, setSeason] = useState(CURRENT_YEAR)
+    const seasons = useSeasons()
+    const [pickedSeason, setPickedSeason] = useState<number | null>(null)
     const [teamId, setTeamId] = useState<number | null>(null)
+
+    // Until a season is picked, show the newest one the API accepts.
+    const season = pickedSeason ?? seasons.current
 
     const teamsQuery = useQuery({
         queryKey: ['teams', season],
-        queryFn: () => fetchTeams(season),
+        queryFn: () => fetchTeams(season!),
+        enabled: season !== undefined,
     })
 
     const rosterQuery = useQuery({
         queryKey: ['roster', teamId, season],
-        queryFn: () => fetchRoster(teamId!, season),
-        enabled: teamId !== null,
+        queryFn: () => fetchRoster(teamId!, season!),
+        enabled: teamId !== null && season !== undefined,
     })
 
     const roster = rosterQuery.data
@@ -47,7 +52,7 @@ export default function PlayerPicker({ addedPlayerIds, canAdd, onAdd }: PlayerPi
     else if (rosterQuery.isFetching) playerPrompt = 'Loading roster…'
 
     function handleSeasonChange(e: ChangeEvent<HTMLSelectElement>) {
-        setSeason(Number(e.target.value))
+        setPickedSeason(Number(e.target.value))
         setTeamId(null)
     }
 
@@ -59,11 +64,12 @@ export default function PlayerPicker({ addedPlayerIds, canAdd, onAdd }: PlayerPi
                     <select
                         id="chart-season-select"
                         className="form-select"
-                        value={season}
+                        value={season ?? ''}
                         onChange={handleSeasonChange}
-                        disabled={teamsQuery.isFetching}
+                        disabled={seasons.isLoading || teamsQuery.isFetching}
                     >
-                        {SEASON_YEARS.map(year => (
+                        {seasons.isLoading && <option value="">Loading…</option>}
+                        {seasons.years.map(year => (
                             <option key={year} value={year}>{year}</option>
                         ))}
                     </select>
@@ -118,6 +124,12 @@ export default function PlayerPicker({ addedPlayerIds, canAdd, onAdd }: PlayerPi
                     </select>
                 </div>
             </div>
+
+            {seasons.error && (
+                <div className="error-box">
+                    Failed to load seasons: {seasons.error.message}
+                </div>
+            )}
 
             {teamsQuery.isError && (
                 <div className="error-box">

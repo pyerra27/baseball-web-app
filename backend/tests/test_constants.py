@@ -5,13 +5,16 @@ Coverage:
     * MLB_FIRST_SEASON value.
     * current_mlb_season() — returns the correct year based on date relative
       to the season-start threshold (March 20).
+    * validate_season() — rejects seasons after the current one with HTTP 422.
 """
 
 import datetime
 import pytest
 from unittest.mock import patch
+from fastapi import HTTPException
 
-from app.constants import MLB_FIRST_SEASON, current_mlb_season
+from app.constants import MLB_FIRST_SEASON, current_mlb_season, validate_season
+from tests.conftest import mock_today
 
 
 class TestMlbFirstSeason:
@@ -69,3 +72,24 @@ class TestCurrentMlbSeason:
         """New Year's Day should return the previous calendar year."""
         with self._mock_today(2026, 1, 1):
             assert current_mlb_season() == 2025
+
+
+class TestValidateSeason:
+
+    def test_accepts_current_season(self):
+        """The current season should pass."""
+        with mock_today(2026, 3, 19):
+            validate_season(2025)
+
+    def test_accepts_earlier_season(self):
+        """A past season should pass."""
+        with mock_today(2026, 3, 19):
+            validate_season(1900)
+
+    def test_rejects_season_after_current_with_422(self):
+        """Before Opening Day, the new calendar year should be rejected with HTTP 422."""
+        with mock_today(2026, 3, 19):
+            with pytest.raises(HTTPException) as exc_info:
+                validate_season(2026)
+        assert exc_info.value.status_code == 422
+        assert exc_info.value.detail == "season must be 2025 or earlier"

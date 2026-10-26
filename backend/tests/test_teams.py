@@ -13,7 +13,7 @@ from fastapi.testclient import TestClient
 from baseball_api_wrapper.client import MLBStatsAPIError
 from app.main import app
 from app.services.teams_service import fetch_teams, _transform_team
-from tests.conftest import make_mock_mlb_client, make_raw_team
+from tests.conftest import make_mock_mlb_client, make_raw_team, mock_today
 
 
 client = TestClient(app)
@@ -131,6 +131,23 @@ class TestTeamsRouter:
         """A season before 1900 should be rejected with HTTP 422."""
         response = client.get("/api/v1/teams?season=1899")
         assert response.status_code == 422
+
+    def test_season_after_current_returns_422(self):
+        """Before Opening Day, the new calendar year should be rejected with a readable message."""
+        with mock_today(2026, 3, 19):
+            response = client.get("/api/v1/teams?season=2026")
+        assert response.status_code == 422
+        assert response.json()["detail"] == "season must be 2025 or earlier"
+
+    def test_new_season_accepted_once_it_starts_without_restart(self):
+        """The upper bound should follow the date on each request, not the date the app loaded."""
+        with patch("app.services.teams_service.get_teams", return_value=RAW_TEAMS):
+            with mock_today(2026, 3, 19):
+                before = client.get("/api/v1/teams?season=2026")
+            with mock_today(2026, 3, 20):
+                after = client.get("/api/v1/teams?season=2026")
+        assert before.status_code == 422
+        assert after.status_code == 200
 
     def test_api_error_returns_correct_status(self):
         """An MLBStatsAPIError should be forwarded as the correct HTTP status."""
