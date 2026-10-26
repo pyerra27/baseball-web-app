@@ -1,12 +1,14 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router'
 import { Loader2 } from 'lucide-react'
+import clsx from 'clsx'
+
 import { fetchTeams, fetchRoster } from '../../services/mlbApi'
 import type { Player } from '../../models/mlb.models'
-import clsx from 'clsx'
 import ScoresTicker from '../scores/ScoreCard'
 import { useSeasons } from '../../utils/seasons'
+
 import styles from './RosterPage.module.css'
 
 function PosBadge({ isPitcher, abbr }: { isPitcher: boolean; abbr: string }) {

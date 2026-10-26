@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { niceStep, niceTicks, valueTicks, yearTicks } from '../../features/charts/chartAxes'
 
 describe('niceStep', () => {

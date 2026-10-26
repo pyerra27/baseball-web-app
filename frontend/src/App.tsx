@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router-dom'
 import { useState, useEffect, lazy, Suspense } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, NavLink } from 'react-router'
 import { Sun, Moon, Loader2 } from 'lucide-react'
 import clsx from 'clsx'
+
 import RosterPage from './features/roster/RosterPage'
 import PlayerPage from './features/player/PlayerPage'
 import GameDetailPage from './features/scores/GameDetailPage'

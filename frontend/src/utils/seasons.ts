@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+
 import { fetchCurrentSeason } from '../services/mlbApi'
 
 /** The MLB Stats API has reliable data from 1900 on. */

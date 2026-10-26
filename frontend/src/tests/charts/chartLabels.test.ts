@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { barValuesFit, labelNames, placeEndLabels, shortName } from '../../features/charts/chartLabels'
 import type { LabelFrame } from '../../features/charts/chartLabels'
 

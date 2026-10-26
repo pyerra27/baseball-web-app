@@ -52,7 +52,8 @@ If the lock and `pyproject.toml` disagree on a version, `pip install -r requirem
 ```bash
 cd frontend
 npm install
-npm run dev  # available at http://localhost:5173
+npm run lint  # import order + blank lines between groups (check only)
+npm run dev   # available at http://localhost:5173
 ```
 
 ### Running Backend Tests

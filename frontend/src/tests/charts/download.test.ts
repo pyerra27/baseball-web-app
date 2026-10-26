@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest'
 import * as htmlToImage from 'html-to-image'
+
 import { downloadCsv, downloadPng, slugify, toCsv } from '../../features/charts/download'
 
 vi.mock('html-to-image', () => ({ toPng: vi.fn() }))

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
+
 import { API_BASE_URL } from '../../config'
 import { fetchCurrentSeason, fetchRoster, fetchTeams } from '../../services/mlbApi'
 

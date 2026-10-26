@@ -1,10 +1,12 @@
-import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
+import { useParams, useSearchParams, useNavigate, Link } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
 import { ChartLine, ChevronLeft, Loader2 } from 'lucide-react'
+import clsx from 'clsx'
+
 import { fetchPlayerCareerStats } from '../../services/mlbApi'
 import type { TeamSplit, YearlyStats } from '../../models/mlb.models'
-import clsx from 'clsx'
+
 import styles from './PlayerPage.module.css'
 
 type Col = { label: string; value: (s: TeamSplit) => string | number | null | undefined }

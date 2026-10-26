@@ -1,7 +1,6 @@
-import '@testing-library/jest-dom'
-
 import { describe, it, expect } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
+
 import SeasonChart, { SeasonTooltipContent } from '../../features/charts/SeasonChart'
 import type { ChartKind, ChartSeries } from '../../features/charts/SeasonChart'
 import { findStat } from '../../features/charts/playerSeries'

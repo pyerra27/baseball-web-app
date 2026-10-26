@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceDot, Tooltip, XAxis, YAxis } from 'recharts'
 import type { TooltipContentProps } from 'recharts'
+
 import { valueTicks, yearTicks } from './chartAxes'
 import {
     BAR_CATEGORY_GAP,
