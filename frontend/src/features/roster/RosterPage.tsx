@@ -6,7 +6,7 @@ import { fetchTeams, fetchRoster } from '../../services/mlbApi'
 import type { Player } from '../../models/mlb.models'
 import clsx from 'clsx'
 import ScoresTicker from '../scores/ScoreCard'
-import { CURRENT_YEAR, SEASON_YEARS } from '../../utils/seasons'
+import { useSeasons } from '../../utils/seasons'
 import styles from './RosterPage.module.css'
 
 function PosBadge({ isPitcher, abbr }: { isPitcher: boolean; abbr: string }) {
@@ -62,21 +62,26 @@ function PlayerTable({ players, isPitcher, season }: { players: Player[]; isPitc
 
 export default function RosterPage() {
     const [searchParams] = useSearchParams()
-    const [season, setSeason] = useState(() => Number(searchParams.get('season')) || CURRENT_YEAR)
+    const seasons = useSeasons()
+    const [pickedSeason, setPickedSeason] = useState<number | null>(() => Number(searchParams.get('season')) || null)
     const [teamId, setTeamId] = useState<number | null>(() => {
         const id = searchParams.get('teamId')
         return id ? Number(id) : null
     })
 
+    // Until a season is picked, show the newest one the API accepts.
+    const season = pickedSeason ?? seasons.current
+
     const teamsQuery = useQuery({
         queryKey: ['teams', season],
-        queryFn: () => fetchTeams(season),
+        queryFn: () => fetchTeams(season!),
+        enabled: season !== undefined,
     })
 
     const rosterQuery = useQuery({
         queryKey: ['roster', teamId, season],
-        queryFn: () => fetchRoster(teamId!, season),
-        enabled: teamId !== null,
+        queryFn: () => fetchRoster(teamId!, season!),
+        enabled: teamId !== null && season !== undefined,
     })
 
     const totalPlayers = useMemo(() => {
@@ -85,7 +90,7 @@ export default function RosterPage() {
     }, [rosterQuery.data])
 
     function handleSeasonChange(e: React.ChangeEvent<HTMLSelectElement>) {
-        setSeason(Number(e.target.value))
+        setPickedSeason(Number(e.target.value))
         setTeamId(null)
     }
 
@@ -109,11 +114,12 @@ export default function RosterPage() {
                     <select
                         id="season-select"
                         className="form-select"
-                        value={season}
+                        value={season ?? ''}
                         onChange={handleSeasonChange}
-                        disabled={teamsQuery.isFetching}
+                        disabled={seasons.isLoading || teamsQuery.isFetching}
                     >
-                        {SEASON_YEARS.map((year) => (
+                        {seasons.isLoading && <option value="">Loading…</option>}
+                        {seasons.years.map((year) => (
                             <option key={year} value={year}>{year}</option>
                         ))}
                     </select>
@@ -137,6 +143,12 @@ export default function RosterPage() {
                     </select>
                 </div>
             </div>
+
+            {seasons.error && (
+                <div className="error-box">
+                    Failed to load seasons: {seasons.error.message}
+                </div>
+            )}
 
             {teamsQuery.isError && (
                 <div className="error-box">
@@ -172,14 +184,14 @@ export default function RosterPage() {
                             <h2 className={clsx('section-heading', styles.columnHeading)}>
                                 <span>🧢</span> Position Players
                             </h2>
-                            <PlayerTable players={rosterQuery.data.position_players} isPitcher={false} season={season} />
+                            <PlayerTable players={rosterQuery.data.position_players} isPitcher={false} season={rosterQuery.data.season} />
                         </section>
 
                         <section>
                             <h2 className={clsx('section-heading', styles.columnHeading)}>
                                 <span>⚾</span> Pitchers
                             </h2>
-                            <PlayerTable players={rosterQuery.data.pitchers} isPitcher={true} season={season} />
+                            <PlayerTable players={rosterQuery.data.pitchers} isPitcher={true} season={rosterQuery.data.season} />
                         </section>
                     </div>
                 </div>

@@ -2,9 +2,18 @@
 Shared test fixtures and factory helpers for the backend test suite.
 """
 
+import datetime
 from typing import Optional
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from baseball_api_wrapper.client import MLBStatsClient
+
+
+def mock_today(year: int, month: int, day: int):
+    """Return a context manager that patches datetime.date.today() for the season helpers."""
+    return patch(
+        "app.constants.datetime.date",
+        **{"today.return_value": datetime.date(year, month, day)},
+    )
 
 
 def make_mock_mlb_client(return_value: dict) -> MLBStatsClient:

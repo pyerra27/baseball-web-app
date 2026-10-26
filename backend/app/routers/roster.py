@@ -7,7 +7,7 @@ Endpoints for retrieving team roster data.
 from fastapi import APIRouter, HTTPException, Path, Query
 from baseball_api_wrapper.client import MLBStatsAPIError
 
-from app.constants import MLB_FIRST_SEASON, current_mlb_season
+from app.constants import MLB_FIRST_SEASON, validate_season
 from app.models.responses import RosterResponse
 from app.services.roster_service import fetch_roster
 
@@ -20,7 +20,6 @@ def get_roster(
     season: int = Path(
         ...,
         ge=MLB_FIRST_SEASON,
-        le=current_mlb_season(),
         description="The MLB season year (1900 – current).",
     ),
 ):
@@ -28,6 +27,7 @@ def get_roster(
     Return the full-season roster for a team split into pitchers and
     position players, both sorted alphabetically by player name.
     """
+    validate_season(season)
     try:
         return fetch_roster(team_id=team_id, season=season)
     except MLBStatsAPIError as exc:

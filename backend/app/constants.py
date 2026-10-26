@@ -6,6 +6,8 @@ Shared constants and helpers for MLB season year validation.
 
 import datetime
 
+from fastapi import HTTPException
+
 # The first year for which the MLB Stats API has reliable data.
 MLB_FIRST_SEASON = 1900
 
@@ -29,3 +31,17 @@ def current_mlb_season() -> int:
     today = datetime.date.today()
     season_has_started = (today.month, today.day) >= (_SEASON_START_MONTH, _SEASON_START_DAY)
     return today.year if season_has_started else today.year - 1
+
+
+def validate_season(season: int) -> None:
+    """
+    Reject a season that hasn't started yet with HTTP 422.
+
+    Routes call this on every request instead of declaring
+    ``le=current_mlb_season()`` in their signatures. Python evaluates a
+    signature once at import, so a server started before March 20 would keep
+    rejecting the new season until it restarted.
+    """
+    current = current_mlb_season()
+    if season > current:
+        raise HTTPException(status_code=422, detail=f"season must be {current} or earlier")

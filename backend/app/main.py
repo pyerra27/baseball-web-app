@@ -10,7 +10,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import teams, roster, players, games
+from app.routers import seasons, teams, roster, players, games
 
 app = FastAPI(
     title="MLB App API",
@@ -38,6 +38,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 API_PREFIX = "/api/v1"
 
+app.include_router(seasons.router, prefix=API_PREFIX)
 app.include_router(teams.router, prefix=API_PREFIX)
 app.include_router(roster.router, prefix=API_PREFIX)
 app.include_router(players.router, prefix=API_PREFIX)

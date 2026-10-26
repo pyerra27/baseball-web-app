@@ -1,13 +1,35 @@
 import { API_BASE_URL } from '../config'
-import type { Team, RosterResponse, PlayerStatsResponse, PlayerCareerStatsResponse, ScoresResponse, BoxScoreResponse } from '../models/mlb.models'
+import type { CurrentSeasonResponse, Team, RosterResponse, PlayerStatsResponse, PlayerCareerStatsResponse, ScoresResponse, BoxScoreResponse } from '../models/mlb.models'
+
+/**
+ * FastAPI sends `detail` as a string, or as a list of validation errors
+ * such as `{ loc: ['query', 'season'], msg: 'Input should be …' }`.
+ */
+function errorMessage(detail: unknown, status: number): string {
+    if (typeof detail === 'string') return detail
+    if (Array.isArray(detail)) {
+        const messages = detail
+            .filter(error => typeof error?.msg === 'string')
+            .map(error => {
+                const field = Array.isArray(error.loc) ? error.loc[error.loc.length - 1] : undefined
+                return field === undefined ? error.msg : `${field}: ${error.msg}`
+            })
+        if (messages.length > 0) return messages.join('; ')
+    }
+    return `HTTP ${status}`
+}
 
 async function apiFetch<T>(path: string): Promise<T> {
     const res = await fetch(`${API_BASE_URL}${path}`)
     if (!res.ok) {
         const body = await res.json().catch(() => null)
-        throw new Error(body?.detail ?? `HTTP ${res.status}`)
+        throw new Error(errorMessage(body?.detail, res.status))
     }
     return res.json() as Promise<T>
+}
+
+export function fetchCurrentSeason(): Promise<CurrentSeasonResponse> {
+    return apiFetch<CurrentSeasonResponse>('/seasons/current')
 }
 
 export function fetchTeams(season: number): Promise<Team[]> {

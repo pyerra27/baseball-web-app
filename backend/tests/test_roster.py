@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 from baseball_api_wrapper.client import MLBStatsAPIError
 from app.main import app
 from app.services.roster_service import fetch_roster, _transform_entry
-from tests.conftest import make_raw_player
+from tests.conftest import make_raw_player, mock_today
 
 
 client = TestClient(app)
@@ -169,3 +169,10 @@ class TestRosterRouter:
         ):
             response = client.get("/api/v1/roster/99999/2024")
         assert response.status_code == 404
+
+    def test_season_after_current_returns_422(self):
+        """Before Opening Day, the new calendar year should be rejected with a readable message."""
+        with mock_today(2026, 3, 19):
+            response = client.get("/api/v1/roster/147/2026")
+        assert response.status_code == 422
+        assert response.json()["detail"] == "season must be 2025 or earlier"
