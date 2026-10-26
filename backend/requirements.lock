@@ -6,7 +6,7 @@ annotated-types==0.7.0
     # via pydantic
 anyio==4.13.0
     # via starlette, watchfiles
-baseball-api-wrapper==0.1.0
+baseball-api-wrapper==0.2.0
     # via mlb-app-backend
 certifi==2026.2.25
     # via requests

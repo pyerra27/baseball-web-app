@@ -11,8 +11,7 @@ pitcher.  This covers starting pitchers (SP), relief pitchers (RP), and
 closers (CL).  All other players are classified as position players.
 """
 
-from baseball_api_wrapper import MLBStatsClient, get_roster
-from baseball_api_wrapper.modules.roster import RosterType
+from baseball_api_wrapper import MLBStatsClient, RosterType, get_roster
 
 from app.models.responses import PlayerResponse, RosterResponse
 
