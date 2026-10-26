@@ -8,7 +8,12 @@ baseball-api-wrapper into the application's response models.
 import datetime
 from typing import Dict, Optional
 
-from baseball_api_wrapper import MLBStatsClient, get_boxscore, get_game_by_pk, get_schedule
+from baseball_api_wrapper import (
+    MLBStatsClient,
+    get_boxscore,
+    get_game_by_pk,
+    get_schedule,
+)
 
 from app.models.responses import (
     BoxScoreResponse,

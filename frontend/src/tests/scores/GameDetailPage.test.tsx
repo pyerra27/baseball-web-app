@@ -1,9 +1,8 @@
-import '@testing-library/jest-dom'
-
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { MemoryRouter, Routes, Route } from 'react-router'
+
 import GameDetailPage from '../../features/scores/GameDetailPage'
 import * as mlbApi from '../../services/mlbApi'
 import type { BoxScoreResponse } from '../../models/mlb.models'

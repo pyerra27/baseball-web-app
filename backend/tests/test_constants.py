@@ -9,12 +9,13 @@ Coverage:
 """
 
 import datetime
-import pytest
 from unittest.mock import patch
+
+import pytest
 from fastapi import HTTPException
 
 from app.constants import MLB_FIRST_SEASON, current_mlb_season, validate_season
-from tests.conftest import mock_today
+from tests.helpers import mock_today
 
 
 class TestMlbFirstSeason:

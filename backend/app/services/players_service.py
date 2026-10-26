@@ -7,13 +7,18 @@ baseball-api-wrapper into the application's response models.
 
 from collections import defaultdict
 
-from baseball_api_wrapper import MLBStatsClient, get_player_info, get_player_stats, get_player_career_splits
+from baseball_api_wrapper import (
+    MLBStatsClient,
+    get_player_career_splits,
+    get_player_info,
+    get_player_stats,
+)
 
 from app.models.responses import (
     HittingStats,
     PitchingStats,
-    PlayerStatsResponse,
     PlayerCareerStatsResponse,
+    PlayerStatsResponse,
     TeamSplit,
     YearlyStats,
 )

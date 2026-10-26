@@ -8,26 +8,27 @@ Coverage:
     * Router layer   — HTTP status codes, response shape, date validation.
 """
 
-import pytest
+import datetime
 from unittest.mock import patch
+
+from baseball_api_wrapper import MLBStatsAPIError
 from fastapi.testclient import TestClient
 
-from baseball_api_wrapper.client import MLBStatsAPIError
 from app.main import app
+from app.models.responses import BoxScoreResponse, ScoresResponse
 from app.services.games_service import (
-    fetch_boxscore,
-    fetch_scores,
     _transform_game,
     _transform_player_stats,
     _transform_team_boxscore,
     _transform_team_info,
+    fetch_boxscore,
+    fetch_scores,
 )
-from tests.conftest import (
+from tests.helpers import (
     make_raw_boxscore_player,
     make_raw_boxscore_team,
     make_raw_schedule_game,
 )
-
 
 http_client = TestClient(app)
 
@@ -262,7 +263,6 @@ class TestFetchScores:
         assert result.games == []
 
     def test_defaults_to_yesterday_when_no_date_given(self):
-        import datetime
         yesterday = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
         with patch("app.services.games_service.build_team_abbreviation_lookup", return_value={}), \
              patch("app.services.games_service.get_schedule", return_value=[]) as mock_sched:
@@ -426,10 +426,8 @@ class TestBoxscoreRouter:
 # ---------------------------------------------------------------------------
 
 def _parse_scores_response(data: dict):
-    from app.models.responses import ScoresResponse
     return ScoresResponse.model_validate(data)
 
 
 def _parse_boxscore_response(data: dict):
-    from app.models.responses import BoxScoreResponse
     return BoxScoreResponse.model_validate(data)

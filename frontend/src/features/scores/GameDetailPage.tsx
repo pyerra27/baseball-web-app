@@ -1,9 +1,11 @@
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft, Loader2 } from 'lucide-react'
+import clsx from 'clsx'
+
 import { fetchBoxScore } from '../../services/mlbApi'
 import type { PlayerBoxScoreStats, TeamBoxScore } from '../../models/mlb.models'
-import clsx from 'clsx'
+
 import styles from './GameDetailPage.module.css'
 
 function val(v: number | string | null | undefined): string {

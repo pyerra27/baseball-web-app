@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { Loader2, X } from 'lucide-react'
+
 import styles from './PlayerChips.module.css'
 
 /** A player on the chart, as their stats load. */

@@ -7,8 +7,8 @@ Endpoints for retrieving MLB game scores.
 import datetime
 import re
 
+from baseball_api_wrapper import MLBStatsAPIError
 from fastapi import APIRouter, HTTPException, Path, Query
-from baseball_api_wrapper.client import MLBStatsAPIError
 
 from app.models.responses import BoxScoreResponse, ScoresResponse
 from app.services.games_service import fetch_boxscore, fetch_scores

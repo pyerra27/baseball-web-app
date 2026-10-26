@@ -42,6 +42,7 @@ frontend/node_modules/
 # Build output
 frontend/dist/
 frontend/.angular/
+frontend/*.tsbuildinfo
 
 # Environment files (add your own locally)
 frontend/src/environments/environment.development.ts

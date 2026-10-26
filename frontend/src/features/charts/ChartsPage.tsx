@@ -1,9 +1,11 @@
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 import { useQueries } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import clsx from 'clsx'
+
 import { fetchPlayerCareerStats } from '../../services/mlbApi'
 import type { PlayerCareerStatsResponse } from '../../models/mlb.models'
+
 import PlayerPicker from './PlayerPicker'
 import PlayerChips from './PlayerChips'
 import type { ChipPlayer } from './PlayerChips'

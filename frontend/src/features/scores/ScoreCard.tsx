@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
+import clsx from 'clsx'
+
 import { fetchScores } from '../../services/mlbApi'
 import type { GameResult } from '../../models/mlb.models'
-import clsx from 'clsx'
+
 import styles from './ScoreCard.module.css'
 
 type Tab = 'today' | 'yesterday'

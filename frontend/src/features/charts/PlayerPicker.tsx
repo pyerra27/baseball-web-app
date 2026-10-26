@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
+
 import { fetchRoster, fetchTeams } from '../../services/mlbApi'
 import type { Player } from '../../models/mlb.models'
 import { useSeasons } from '../../utils/seasons'

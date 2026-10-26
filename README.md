@@ -23,8 +23,11 @@ cd backend
 python3.14 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Install the locked dependencies and the backend (add [dev] for test tools)
+# Install the locked dependencies and the backend (add [dev] for test and lint tools)
 pip install -r requirements.lock -e ".[dev]"
+
+# Lint: import order + unused imports (check only)
+ruff check .
 
 # Run the dev server (available at http://localhost:8000)
 uvicorn app.main:app --reload --port 8000
@@ -49,7 +52,8 @@ If the lock and `pyproject.toml` disagree on a version, `pip install -r requirem
 ```bash
 cd frontend
 npm install
-npm run dev  # available at http://localhost:5173
+npm run lint  # import order + blank lines between groups (check only)
+npm run dev   # available at http://localhost:5173
 ```
 
 ### Running Backend Tests

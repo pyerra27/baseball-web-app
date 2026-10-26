@@ -4,8 +4,8 @@ Roster Router
 Endpoints for retrieving team roster data.
 """
 
-from fastapi import APIRouter, HTTPException, Path, Query
-from baseball_api_wrapper.client import MLBStatsAPIError
+from baseball_api_wrapper import MLBStatsAPIError
+from fastapi import APIRouter, HTTPException, Path
 
 from app.constants import MLB_FIRST_SEASON, validate_season
 from app.models.responses import RosterResponse
