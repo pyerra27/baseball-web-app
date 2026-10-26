@@ -1,0 +1,79 @@
+/* Player chips on the Charts page. */
+.list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    list-style: none;
+}
+
+.chip {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.875rem;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--radius-lg);
+}
+
+/* A short stroke in the player's line color, matching the chart legend. */
+.lineKey {
+    width: 16px;
+    height: 3px;
+    border-radius: 2px;
+}
+
+.name {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--app-text);
+}
+
+.position {
+    color: var(--app-muted);
+    font-size: 0.875rem;
+}
+
+.careerLink {
+    color: var(--app-accent);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.careerLink:hover {
+    text-decoration: underline;
+}
+
+/* Loading and failed chips, in place of the name. */
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--app-muted);
+    font-size: 0.875rem;
+}
+
+.removeButton {
+    display: inline-grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-md);
+    color: var(--app-muted);
+    cursor: pointer;
+    transition: color 150ms ease, background-color 150ms ease;
+}
+
+.removeButton:hover {
+    color: var(--app-text);
+    background: var(--app-surface-hover);
+}
+
+.removeButton:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--app-accent-muted);
+}

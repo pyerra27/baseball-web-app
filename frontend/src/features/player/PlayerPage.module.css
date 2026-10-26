@@ -1,5 +1,6 @@
-.backButton {
-    align-self: flex-start;
+/* The back button and the chart link share one bordered-button style. */
+.backButton,
+.chartLink {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -16,18 +17,38 @@
     transition: color 150ms ease, border-color 150ms ease;
 }
 
-.backButton:hover {
+.backButton {
+    align-self: flex-start;
+}
+
+.chartLink {
+    gap: 0.375rem;
+}
+
+.backButton:hover,
+.chartLink:hover {
     border-color: var(--app-accent);
     color: var(--app-accent);
 }
 
-.backButton:active {
+.backButton:active,
+.chartLink:active {
     transform: translateY(1px);
 }
 
-.backButton:focus-visible {
+.backButton:focus-visible,
+.chartLink:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px var(--app-accent-muted);
+}
+
+/* ---- Header ---- */
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
 /* ---- Career table ---- */

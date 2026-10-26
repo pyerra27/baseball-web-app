@@ -6,10 +6,8 @@ import { fetchTeams, fetchRoster } from '../../services/mlbApi'
 import type { Player } from '../../models/mlb.models'
 import clsx from 'clsx'
 import ScoresTicker from '../scores/ScoreCard'
+import { CURRENT_YEAR, SEASON_YEARS } from '../../utils/seasons'
 import styles from './RosterPage.module.css'
-
-const CURRENT_YEAR = new Date().getFullYear()
-const YEARS = Array.from({ length: CURRENT_YEAR - 1899 }, (_, i) => CURRENT_YEAR - i)
 
 function PosBadge({ isPitcher, abbr }: { isPitcher: boolean; abbr: string }) {
     return (
@@ -105,27 +103,27 @@ export default function RosterPage() {
 
             <ScoresTicker />
 
-            <div className={styles.filters}>
-                <div className={styles.field}>
+            <div className="filter-row">
+                <div className="form-field">
                     <label htmlFor="season-select" className="field-label">Season</label>
                     <select
                         id="season-select"
-                        className={styles.select}
+                        className="form-select"
                         value={season}
                         onChange={handleSeasonChange}
                         disabled={teamsQuery.isFetching}
                     >
-                        {YEARS.map((year) => (
+                        {SEASON_YEARS.map((year) => (
                             <option key={year} value={year}>{year}</option>
                         ))}
                     </select>
                 </div>
 
-                <div className={styles.field}>
+                <div className="form-field">
                     <label htmlFor="team-select" className="field-label">Team</label>
                     <select
                         id="team-select"
-                        className={styles.select}
+                        className="form-select"
                         value={teamId ?? ''}
                         onChange={handleTeamChange}
                         disabled={teamsQuery.isFetching || !teamsQuery.data?.length}

@@ -232,6 +232,20 @@ describe('PlayerPage', () => {
         expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
     })
 
+    it('links to the Charts page for the player', async () => {
+        vi.mocked(mlbApi.fetchPlayerCareerStats).mockResolvedValue(HITTING_PLAYER)
+        renderPlayerPage()
+        const link = await screen.findByRole('link', { name: /chart these stats/i })
+        expect(link).toHaveAttribute('href', '/charts?players=660271')
+    })
+
+    it('hides the chart link when the player has no stats', async () => {
+        vi.mocked(mlbApi.fetchPlayerCareerStats).mockResolvedValue(NO_STATS_PLAYER)
+        renderPlayerPage('999')
+        await screen.findByText(/no career statistics available/i)
+        expect(screen.queryByRole('link', { name: /chart these stats/i })).not.toBeInTheDocument()
+    })
+
     it('calls fetchPlayerCareerStats with the correct player id', async () => {
         vi.mocked(mlbApi.fetchPlayerCareerStats).mockResolvedValue(HITTING_PLAYER)
         renderPlayerPage('660271', '2024')

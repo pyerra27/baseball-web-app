@@ -1,7 +1,7 @@
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
-import { ChevronLeft, Loader2 } from 'lucide-react'
+import { ChartLine, ChevronLeft, Loader2 } from 'lucide-react'
 import { fetchPlayerCareerStats } from '../../services/mlbApi'
 import type { TeamSplit, YearlyStats } from '../../models/mlb.models'
 import clsx from 'clsx'
@@ -189,9 +189,17 @@ export default function PlayerPage() {
 
             {data && (
                 <>
-                    <div className="accent-bar">
-                        <h1 className="page-title">{data.full_name}</h1>
-                        <p className="page-sub">{data.position_type} · Career Statistics</p>
+                    <div className={styles.header}>
+                        <div className="accent-bar">
+                            <h1 className="page-title">{data.full_name}</h1>
+                            <p className="page-sub">{data.position_type} · Career Statistics</p>
+                        </div>
+                        {(hasHitting || hasPitching) && (
+                            <Link to={`/charts?players=${data.player_id}`} className={styles.chartLink}>
+                                <ChartLine size={14} />
+                                Chart these stats
+                            </Link>
+                        )}
                     </div>
 
                     {!hasHitting && !hasPitching && (

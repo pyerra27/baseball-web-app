@@ -1,0 +1,27 @@
+.workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    transition: opacity 150ms ease;
+}
+
+/* A new player is loading. Keep the previous chart in place, dimmed. */
+.stale {
+    opacity: 0.5;
+}
+
+/* A player left off the chart because they have no stats in its group. */
+.note {
+    color: var(--app-muted);
+    font-size: 0.875rem;
+}
+
+/* Narrower than the global .form-select default, which suits team names.
+   The element selector outranks that class regardless of stylesheet order. */
+select.yearSelect {
+    min-width: 7.5rem;
+}
+
+select.optionSelect {
+    min-width: 10rem;
+}
