@@ -18,9 +18,23 @@
 
 /* ---- Main navigation ---- */
 .header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 2rem;
     max-width: 1100px;
     margin: 0 auto;
     padding: 1.25rem 2rem 0;
+}
+
+.headerSearch {
+    width: 16rem;
+}
+
+@media (width < 48rem) {
+    .headerSearch {
+        width: 100%;
+    }
 }
 
 .nav {

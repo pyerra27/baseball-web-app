@@ -1,0 +1,144 @@
+/* ---- Player search box ---- */
+.root {
+    position: relative;
+    width: 20rem;
+    max-width: 100%;
+}
+
+.inputWrap {
+    position: relative;
+}
+
+.searchIcon,
+.inputSpinner {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-block: auto;
+    pointer-events: none;
+}
+
+.searchIcon {
+    left: 0.75rem;
+    color: var(--app-muted);
+}
+
+.inputSpinner {
+    right: 0.75rem;
+}
+
+/* The global reset only covers buttons and selects. */
+.input {
+    width: 100%;
+    padding: 0.5rem 2.25rem;
+    background-color: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--radius-md);
+    font: inherit;
+    font-size: 0.95rem;
+    letter-spacing: inherit;
+    color: var(--app-text);
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.input::placeholder {
+    color: var(--app-muted);
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--app-accent);
+    box-shadow: 0 0 0 2px var(--app-accent-muted);
+}
+
+.input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ---- Results popup ---- */
+.popup {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    left: 0;
+    right: 0;
+    /* Above the fixed theme toggle. */
+    z-index: 60;
+    max-height: 20rem;
+    overflow-y: auto;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+}
+
+.listbox {
+    list-style: none;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--app-text);
+    cursor: pointer;
+}
+
+.option:hover,
+.optionActive {
+    background: var(--app-surface-hover);
+}
+
+.optionDisabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.optionDisabled:hover {
+    background: none;
+}
+
+.name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.years {
+    font-size: 0.75rem;
+    white-space: nowrap;
+    color: var(--app-muted);
+}
+
+/* Stays mounted while the popup is open, so screen readers announce changes. */
+.status:not(:empty) {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--app-muted);
+}
+
+/* ---- Position badge ---- */
+.badge {
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.fielderBadge {
+    background: var(--app-badge-field-bg);
+    color: var(--app-badge-field);
+}
+
+.pitcherBadge {
+    background: var(--app-badge-pitcher-bg);
+    color: var(--app-badge-pitcher);
+}

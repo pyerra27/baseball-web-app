@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 
 import { API_BASE_URL } from '../../config'
-import { fetchCurrentSeason, fetchRoster, fetchTeams } from '../../services/mlbApi'
+import { fetchCurrentSeason, fetchRoster, fetchTeams, searchPlayers } from '../../services/mlbApi'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -63,5 +63,13 @@ describe('fetchCurrentSeason', () => {
         const fetchMock = respondWith(200, { season: 2025 })
         await expect(fetchCurrentSeason()).resolves.toEqual({ season: 2025 })
         expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/seasons/current`)
+    })
+})
+
+describe('searchPlayers', () => {
+    it('encodes the search text', async () => {
+        const fetchMock = respondWith(200, { query: 'acuña jr', players: [] })
+        await expect(searchPlayers('acuña jr')).resolves.toEqual({ query: 'acuña jr', players: [] })
+        expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/players/search?q=acu%C3%B1a%20jr`)
     })
 })

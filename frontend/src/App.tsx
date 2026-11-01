@@ -6,6 +6,7 @@ import clsx from 'clsx'
 import RosterPage from './features/roster/RosterPage'
 import PlayerPage from './features/player/PlayerPage'
 import GameDetailPage from './features/scores/GameDetailPage'
+import NavPlayerSearch from './features/search/NavPlayerSearch'
 import styles from './App.module.css'
 
 // Loaded on demand so the charting library stays out of the other pages' bundle.
@@ -45,6 +46,9 @@ export default function App() {
                     <NavLink to="/roster" className={navLinkClass}>Roster</NavLink>
                     <NavLink to="/charts" className={navLinkClass}>Charts</NavLink>
                 </nav>
+                <div role="search" className={styles.headerSearch}>
+                    <NavPlayerSearch />
+                </div>
             </header>
             <Suspense
                 fallback={

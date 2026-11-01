@@ -118,7 +118,7 @@ export default function ChartsPage() {
 
             {entries.length === 0 && (
                 <div className="empty-state">
-                    Choose a season, team, and player to chart their stats. Add up to three players to compare them.
+                    Search for a player to chart their stats. Add up to three players to compare them.
                 </div>
             )}
 
