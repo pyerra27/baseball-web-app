@@ -5,13 +5,54 @@ Endpoints for retrieving individual player statistics.
 """
 
 from baseball_api_wrapper import MLBStatsAPIError
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, HTTPException, Path, Query
 
 from app.constants import MLB_FIRST_SEASON, validate_season
-from app.models.responses import PlayerCareerStatsResponse, PlayerStatsResponse
-from app.services.players_service import fetch_player_career_stats, fetch_player_stats
+from app.models.responses import (
+    PlayerCareerStatsResponse,
+    PlayerSearchResponse,
+    PlayerStatsResponse,
+)
+from app.services.players_service import (
+    fetch_player_career_stats,
+    fetch_player_search,
+    fetch_player_stats,
+)
 
 router = APIRouter(prefix="/players", tags=["Players"])
+
+
+@router.get("/search", response_model=PlayerSearchResponse)
+def get_player_search(
+    q: str = Query(
+        ...,
+        max_length=50,
+        description="All or part of a player's name, e.g. \"aaron jud\".",
+    ),
+    limit: int = Query(
+        10,
+        ge=1,
+        le=25,
+        description="The maximum number of players to return.",
+    ),
+):
+    """
+    Return the MLB players whose names match the search text, active players first.
+
+    The text needs at least 2 characters once surrounding spaces are removed.
+    """
+    query = q.strip()
+    if len(query) < 2:
+        raise HTTPException(
+            status_code=422,
+            detail="Search text must be at least 2 characters.",
+        )
+    try:
+        return fetch_player_search(query=query, limit=limit)
+    except MLBStatsAPIError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=exc.message)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 @router.get("/{player_id}/stats/{season}", response_model=PlayerStatsResponse)

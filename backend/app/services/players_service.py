@@ -12,16 +12,22 @@ from baseball_api_wrapper import (
     get_player_career_splits,
     get_player_info,
     get_player_stats,
+    search_players,
 )
 
 from app.models.responses import (
     HittingStats,
     PitchingStats,
     PlayerCareerStatsResponse,
+    PlayerSearchResponse,
+    PlayerSearchResult,
     PlayerStatsResponse,
     TeamSplit,
     YearlyStats,
 )
+
+# MLB's maximum. The extra rows make up for the minor leaguers filtered out of a search.
+_SEARCH_FETCH_LIMIT = 50
 
 
 def fetch_player_stats(
@@ -139,6 +145,35 @@ def fetch_player_career_stats(
     )
 
 
+def fetch_player_search(
+    query: str,
+    limit: int,
+    client: MLBStatsClient | None = None,
+) -> PlayerSearchResponse:
+    """
+    Return the players whose names match a search, active players first.
+
+    MLB's results include minor leaguers who never reached the majors. The app
+    has no stats to show for them, so anyone without an MLB debut date is
+    dropped before the list is cut down to ``limit``.
+
+    Args:
+        query:  The search text, e.g. "aaron jud".
+        limit:  The maximum number of players to return.
+        client: Optional pre-configured MLBStatsClient. Useful for testing.
+
+    Returns:
+        A PlayerSearchResponse containing the matching players.
+    """
+    people = search_players(query, limit=_SEARCH_FETCH_LIMIT, client=client)
+    debuted = [person for person in people if person.get("mlbDebutDate")]
+
+    return PlayerSearchResponse(
+        query=query,
+        players=[_build_search_result(person) for person in debuted[:limit]],
+    )
+
+
 # ---------------------------------------------------------------------------
 # Raw API → model mappers
 # ---------------------------------------------------------------------------
@@ -179,4 +214,20 @@ def _build_pitching(raw: dict) -> PitchingStats:
         strike_outs=raw.get("strikeOuts"),
         era=raw.get("era"),
         whip=raw.get("whip"),
+    )
+
+
+def _build_search_result(raw: dict) -> PlayerSearchResult:
+    """Map a raw MLB Stats API person who has debuted to PlayerSearchResult."""
+    primary_position = raw.get("primaryPosition") or {}
+    last_played = raw.get("lastPlayedDate")
+
+    return PlayerSearchResult(
+        id=raw["id"],
+        full_name=raw.get("fullName", "Unknown"),
+        position_abbreviation=primary_position.get("abbreviation", ""),
+        position_type=primary_position.get("type", ""),
+        active=bool(raw.get("active")),
+        debut_year=int(raw["mlbDebutDate"][:4]),
+        last_played_year=int(last_played[:4]) if last_played else None,
     )
