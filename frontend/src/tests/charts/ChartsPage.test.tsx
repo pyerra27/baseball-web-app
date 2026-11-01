@@ -11,15 +11,12 @@ import type {
     HittingStats,
     PitchingStats,
     PlayerCareerStatsResponse,
-    RosterResponse,
-    Team,
+    PlayerSearchResult,
 } from '../../models/mlb.models'
 
 vi.mock('../../services/mlbApi', () => ({
-    fetchCurrentSeason: vi.fn(),
     fetchPlayerCareerStats: vi.fn(),
-    fetchTeams: vi.fn(),
-    fetchRoster: vi.fn(),
+    searchPlayers: vi.fn(),
 }))
 
 vi.mock('html-to-image', () => ({ toPng: vi.fn() }))
@@ -151,36 +148,14 @@ const JUDGE: PlayerCareerStatsResponse = {
     ],
 }
 
-const ANGELS: Team = {
-    id: 108,
-    name: 'Los Angeles Angels',
-    abbreviation: 'LAA',
-    team_name: 'Angels',
-    location_name: 'Anaheim',
-    league_id: 103,
-    league_name: 'American League',
-    division_id: 200,
-    division_name: 'American League West',
-}
-
-// The newest season the API accepts. Before Opening Day 2026, still 2025.
-const CURRENT_SEASON = 2025
-
-const ANGELS_ROSTER: RosterResponse = {
-    team_id: 108,
-    season: CURRENT_SEASON,
-    pitchers: [],
-    position_players: [
-        {
-            id: 545361,
-            full_name: 'Mike Trout',
-            jersey_number: '27',
-            position_code: '8',
-            position_name: 'Outfielder',
-            position_abbreviation: 'CF',
-            position_type: 'Outfielder',
-        },
-    ],
+const TROUT_RESULT: PlayerSearchResult = {
+    id: 545361,
+    full_name: 'Mike Trout',
+    position_abbreviation: 'CF',
+    position_type: 'Outfielder',
+    active: true,
+    debut_year: 2011,
+    last_played_year: null,
 }
 
 // ---------------------------------------------------------------------------
@@ -282,10 +257,8 @@ beforeAll(() => {
 })
 
 beforeEach(() => {
-    vi.mocked(mlbApi.fetchCurrentSeason).mockReset().mockResolvedValue({ season: CURRENT_SEASON })
     vi.mocked(mlbApi.fetchPlayerCareerStats).mockReset()
-    vi.mocked(mlbApi.fetchTeams).mockReset().mockResolvedValue([ANGELS])
-    vi.mocked(mlbApi.fetchRoster).mockReset().mockResolvedValue(ANGELS_ROSTER)
+    vi.mocked(mlbApi.searchPlayers).mockReset().mockResolvedValue({ query: 'trout', players: [TROUT_RESULT] })
     vi.mocked(htmlToImage.toPng).mockReset()
     objectUrlBlobs.length = 0
     anchorClicks.length = 0
@@ -296,10 +269,9 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('ChartsPage', () => {
-    it('asks for a player when none is selected', async () => {
+    it('asks for a player when none is selected', () => {
         renderChartsPage()
-        expect(screen.getByText(/choose a season, team, and player/i)).toBeInTheDocument()
-        await screen.findByRole('option', { name: 'Los Angeles Angels' })
+        expect(screen.getByText(/search for a player/i)).toBeInTheDocument()
         expect(mlbApi.fetchPlayerCareerStats).not.toHaveBeenCalled()
     })
 
@@ -373,21 +345,16 @@ describe('ChartsPage', () => {
         expect(tableRows()).toEqual([['2022', 'WSH / SD', '27']])
     })
 
-    it('picks a player with the season, team, and player selects', async () => {
+    it('picks a player with the search', async () => {
         const user = userEvent.setup()
         vi.mocked(mlbApi.fetchPlayerCareerStats).mockResolvedValue(TROUT)
         renderChartsPage()
 
-        await screen.findByRole('option', { name: 'Los Angeles Angels' })
-        expect(screen.getByLabelText('Season')).toHaveValue(String(CURRENT_SEASON))
-        expect(screen.queryByRole('option', { name: String(CURRENT_SEASON + 1) })).not.toBeInTheDocument()
-        await user.selectOptions(screen.getByLabelText('Team'), '108')
-        await waitFor(() => expect(screen.getByLabelText('Add player')).toBeEnabled())
-        await user.selectOptions(screen.getByLabelText('Add player'), '545361')
+        await user.type(screen.getByLabelText('Add player'), 'trout')
+        await user.click(await screen.findByRole('option', { name: /^Mike Trout/ }))
 
         expect(await screen.findByRole('heading', { name: 'Home Runs' })).toBeInTheDocument()
-        expect(mlbApi.fetchTeams).toHaveBeenCalledWith(CURRENT_SEASON)
-        expect(mlbApi.fetchRoster).toHaveBeenCalledWith(108, CURRENT_SEASON)
+        expect(mlbApi.searchPlayers).toHaveBeenCalledWith('trout')
         expect(mlbApi.fetchPlayerCareerStats).toHaveBeenCalledWith(545361)
         expect(screen.getByTestId('location')).toHaveTextContent('players=545361')
     })
@@ -454,30 +421,31 @@ describe('ChartsPage comparing players', () => {
         expect(screen.getByText('Mike Trout vs. Aaron Judge · 2017–2022')).toBeInTheDocument()
     })
 
-    it('adds a player with the picker', async () => {
+    it('adds a player with the search', async () => {
         const user = userEvent.setup()
         serveCareers([JUDGE, TROUT])
         renderChartsPage('?players=592450')
         await screen.findByRole('button', { name: 'Remove Aaron Judge' })
 
-        await screen.findByRole('option', { name: 'Los Angeles Angels' })
-        await user.selectOptions(screen.getByLabelText('Team'), '108')
-        await waitFor(() => expect(screen.getByLabelText('Add player')).toBeEnabled())
-        await user.selectOptions(screen.getByLabelText('Add player'), '545361')
+        await user.type(screen.getByLabelText('Add player'), 'trout')
+        await user.click(await screen.findByRole('option', { name: /^Mike Trout/ }))
 
         expect(await screen.findByRole('button', { name: 'Remove Mike Trout' })).toBeInTheDocument()
         expect(screen.getByTestId('location')).toHaveTextContent('players=592450,545361')
+        expect(screen.getByLabelText('Add player')).toHaveValue('')
     })
 
     it("doesn't offer a player who is already on the chart", async () => {
         const user = userEvent.setup()
         await renderPlayer(TROUT)
 
-        await screen.findByRole('option', { name: 'Los Angeles Angels' })
-        await user.selectOptions(screen.getByLabelText('Team'), '108')
-        await waitFor(() => expect(screen.getByLabelText('Add player')).toBeEnabled())
+        await user.type(screen.getByLabelText('Add player'), 'trout')
+        const option = await screen.findByRole('option', { name: /^Mike Trout/ })
+        expect(option).toHaveAttribute('aria-disabled', 'true')
 
-        expect(screen.getByRole('option', { name: 'Mike Trout' })).toBeDisabled()
+        await user.click(option)
+
+        expect(screen.getByTestId('location')).toHaveTextContent(/players=545361$/)
     })
 
     it('keeps the other players in their slots, and colors, when one is removed', async () => {
@@ -494,8 +462,9 @@ describe('ChartsPage comparing players', () => {
 
     it('stops adding players at three', async () => {
         await renderPlayers([TROUT, JUDGE, PITCHER])
-        expect(screen.getByLabelText('Add player')).toBeDisabled()
-        expect(screen.getByRole('option', { name: 'Remove a player to add another' })).toBeInTheDocument()
+        const search = screen.getByLabelText('Add player')
+        expect(search).toBeDisabled()
+        expect(search).toHaveAttribute('placeholder', 'Remove a player to add another')
     })
 
     it('compares players in a table with a column each', async () => {

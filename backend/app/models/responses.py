@@ -144,6 +144,27 @@ class PlayerCareerStatsResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Player Search
+# ---------------------------------------------------------------------------
+
+class PlayerSearchResult(BaseModel):
+    """A player whose name matches a search."""
+    id: int
+    full_name: str
+    position_abbreviation: str
+    position_type: str
+    active: bool
+    debut_year: int
+    last_played_year: Optional[int] = None
+
+
+class PlayerSearchResponse(BaseModel):
+    """Players matching a name search, active players first."""
+    query: str
+    players: list[PlayerSearchResult]
+
+
+# ---------------------------------------------------------------------------
 # Game Scores
 # ---------------------------------------------------------------------------
 

@@ -68,6 +68,33 @@ def make_raw_player(
     }
 
 
+def make_raw_person(
+    player_id: int,
+    full_name: str,
+    position_type: str = "Outfielder",
+    position_abbreviation: str = "RF",
+    active: bool = True,
+    mlb_debut_date: Optional[str] = "2016-08-13",
+    last_played_date: Optional[str] = None,
+) -> dict:
+    """Return a minimal people-search entry mirroring the MLB Stats API response shape."""
+    person = {
+        "id": player_id,
+        "fullName": full_name,
+        "primaryPosition": {
+            "type": position_type,
+            "abbreviation": position_abbreviation,
+        },
+        "active": active,
+    }
+    # The API leaves these keys out when there's no date.
+    if mlb_debut_date is not None:
+        person["mlbDebutDate"] = mlb_debut_date
+    if last_played_date is not None:
+        person["lastPlayedDate"] = last_played_date
+    return person
+
+
 def make_raw_schedule_game(
     game_pk: int,
     away_id: int = 147,

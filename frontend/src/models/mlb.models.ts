@@ -100,6 +100,21 @@ export interface PlayerCareerStatsResponse {
     seasons: YearlyStats[]
 }
 
+export interface PlayerSearchResult {
+    id: number
+    full_name: string
+    position_abbreviation: string
+    position_type: string
+    active: boolean
+    debut_year: number
+    last_played_year: number | null
+}
+
+export interface PlayerSearchResponse {
+    query: string
+    players: PlayerSearchResult[]
+}
+
 export interface GameTeamInfo {
     team_id: number
     team_name: string

@@ -4,9 +4,10 @@ Tests for the Players service and API router.
 Coverage:
     * Service layer — stat transformation, hitting/pitching field mapping,
                       career stats grouping by season and team, multi-team
-                      aggregate row handling.
+                      aggregate row handling, player search filtering and
+                      field mapping.
     * Router layer  — HTTP status codes, response shape, 404 on unknown player,
-                      career-stats endpoint.
+                      career-stats endpoint, player search validation.
 """
 
 from unittest.mock import patch
@@ -20,9 +21,10 @@ from app.services.players_service import (
     _build_hitting,
     _build_pitching,
     fetch_player_career_stats,
+    fetch_player_search,
     fetch_player_stats,
 )
-from tests.helpers import mock_today
+from tests.helpers import make_raw_person, mock_today
 
 client = TestClient(app)
 
@@ -308,6 +310,85 @@ class TestFetchPlayerCareerStats:
 
 
 # ---------------------------------------------------------------------------
+# Service — fetch_player_search
+# ---------------------------------------------------------------------------
+
+class TestFetchPlayerSearch:
+
+    def test_maps_fields_for_retired_player(self):
+        """Each field should come from the raw person, with years taken from the dates."""
+        babe_ruth = make_raw_person(
+            121578,
+            "Babe Ruth",
+            active=False,
+            mlb_debut_date="1914-07-11",
+            last_played_date="1935-05-30",
+        )
+        with patch("app.services.players_service.search_players", return_value=[babe_ruth]):
+            result = fetch_player_search("babe ruth", limit=10)
+        assert result.query == "babe ruth"
+        player = result.players[0]
+        assert player.id == 121578
+        assert player.full_name == "Babe Ruth"
+        assert player.position_abbreviation == "RF"
+        assert player.position_type == "Outfielder"
+        assert player.active is False
+        assert player.debut_year == 1914
+        assert player.last_played_year == 1935
+
+    def test_last_played_year_is_none_for_active_player(self):
+        """An active player has no last-played date, so last_played_year should be None."""
+        judge = make_raw_person(592450, "Aaron Judge")
+        with patch("app.services.players_service.search_players", return_value=[judge]):
+            result = fetch_player_search("judge", limit=10)
+        assert result.players[0].active is True
+        assert result.players[0].last_played_year is None
+
+    def test_drops_players_who_never_debuted(self):
+        """People with no MLB debut date should be left out."""
+        people = [
+            make_raw_person(682829, "Elly De La Cruz", mlb_debut_date="2023-06-06"),
+            make_raw_person(678926, "Carlos De La Cruz", mlb_debut_date=None),
+        ]
+        with patch("app.services.players_service.search_players", return_value=people):
+            result = fetch_player_search("de la cruz", limit=10)
+        assert [player.full_name for player in result.players] == ["Elly De La Cruz"]
+
+    def test_limit_applies_after_filtering(self):
+        """Players who never debuted shouldn't use up the limit."""
+        people = [
+            make_raw_person(1, "Never Debuted", mlb_debut_date=None),
+            make_raw_person(2, "First Debuted"),
+            make_raw_person(3, "Second Debuted"),
+            make_raw_person(4, "Third Debuted"),
+        ]
+        with patch("app.services.players_service.search_players", return_value=people):
+            result = fetch_player_search("debuted", limit=2)
+        assert [player.id for player in result.players] == [2, 3]
+
+    def test_asks_wrapper_for_mlb_maximum(self):
+        """The wrapper should be asked for 50 people, whatever the limit."""
+        with patch("app.services.players_service.search_players", return_value=[]) as mock_search:
+            fetch_player_search("judge", limit=10)
+        mock_search.assert_called_once_with("judge", limit=50, client=None)
+
+    def test_missing_primary_position_gives_empty_strings(self):
+        """A person with no primaryPosition should get empty position fields."""
+        judge = make_raw_person(592450, "Aaron Judge")
+        del judge["primaryPosition"]
+        with patch("app.services.players_service.search_players", return_value=[judge]):
+            result = fetch_player_search("judge", limit=10)
+        assert result.players[0].position_abbreviation == ""
+        assert result.players[0].position_type == ""
+
+    def test_no_matches_returns_empty_list(self):
+        """A search with no matches should return an empty players list."""
+        with patch("app.services.players_service.search_players", return_value=[]):
+            result = fetch_player_search("zzqxv", limit=10)
+        assert result.players == []
+
+
+# ---------------------------------------------------------------------------
 # Router — GET /api/v1/players/{player_id}/stats/{season}
 # ---------------------------------------------------------------------------
 
@@ -417,3 +498,105 @@ class TestCareerStatsRouter:
         ):
             response = client.get("/api/v1/players/660271/career-stats")
         assert response.status_code == 503
+
+
+# ---------------------------------------------------------------------------
+# Router — GET /api/v1/players/search
+# ---------------------------------------------------------------------------
+
+class TestPlayerSearchRouter:
+
+    def test_returns_matching_players(self):
+        """A valid search should return HTTP 200 with the matching players."""
+        judge = make_raw_person(592450, "Aaron Judge")
+        with patch("app.services.players_service.search_players", return_value=[judge]):
+            response = client.get("/api/v1/players/search", params={"q": "judge"})
+        assert response.status_code == 200
+        assert response.json() == {
+            "query": "judge",
+            "players": [
+                {
+                    "id": 592450,
+                    "full_name": "Aaron Judge",
+                    "position_abbreviation": "RF",
+                    "position_type": "Outfielder",
+                    "active": True,
+                    "debut_year": 2016,
+                    "last_played_year": None,
+                },
+            ],
+        }
+
+    def test_strips_surrounding_spaces_before_searching(self):
+        """Spaces around the search text shouldn't reach the wrapper or the response."""
+        with patch("app.services.players_service.search_players", return_value=[]) as mock_search:
+            response = client.get("/api/v1/players/search", params={"q": "  judge  "})
+        assert response.json()["query"] == "judge"
+        assert mock_search.call_args.args[0] == "judge"
+
+    def test_limit_defaults_to_ten(self):
+        """Without a limit, at most 10 players should be returned."""
+        people = [make_raw_person(player_id, f"Player {player_id}") for player_id in range(1, 16)]
+        with patch("app.services.players_service.search_players", return_value=people):
+            response = client.get("/api/v1/players/search", params={"q": "player"})
+        assert len(response.json()["players"]) == 10
+
+    def test_limit_param_caps_results(self):
+        """The limit param should cap the number of players returned."""
+        people = [make_raw_person(player_id, f"Player {player_id}") for player_id in range(1, 16)]
+        with patch("app.services.players_service.search_players", return_value=people):
+            response = client.get("/api/v1/players/search", params={"q": "player", "limit": 2})
+        assert len(response.json()["players"]) == 2
+
+    def test_missing_query_returns_422(self):
+        """A request without q should return HTTP 422."""
+        response = client.get("/api/v1/players/search")
+        assert response.status_code == 422
+
+    def test_query_too_short_after_stripping_returns_422(self):
+        """Fewer than 2 characters after stripping should return 422 without searching."""
+        with patch("app.services.players_service.search_players") as mock_search:
+            response = client.get("/api/v1/players/search", params={"q": " j "})
+        assert response.status_code == 422
+        assert response.json()["detail"] == "Search text must be at least 2 characters."
+        mock_search.assert_not_called()
+
+    def test_blank_query_returns_422(self):
+        """Only spaces should return 422 rather than reaching the wrapper's ValueError."""
+        with patch("app.services.players_service.search_players") as mock_search:
+            response = client.get("/api/v1/players/search", params={"q": "    "})
+        assert response.status_code == 422
+        mock_search.assert_not_called()
+
+    def test_query_over_max_length_returns_422(self):
+        """Search text over 50 characters should return HTTP 422."""
+        response = client.get("/api/v1/players/search", params={"q": "x" * 51})
+        assert response.status_code == 422
+
+    def test_limit_above_maximum_returns_422(self):
+        """A limit above 25 should return HTTP 422."""
+        response = client.get("/api/v1/players/search", params={"q": "judge", "limit": 26})
+        assert response.status_code == 422
+
+    def test_limit_below_minimum_returns_422(self):
+        """A limit below 1 should return HTTP 422."""
+        response = client.get("/api/v1/players/search", params={"q": "judge", "limit": 0})
+        assert response.status_code == 422
+
+    def test_api_error_forwarded_as_http_error(self):
+        """An MLBStatsAPIError should be forwarded as the correct HTTP status."""
+        with patch(
+            "app.services.players_service.search_players",
+            side_effect=MLBStatsAPIError(503, "Service Unavailable"),
+        ):
+            response = client.get("/api/v1/players/search", params={"q": "judge"})
+        assert response.status_code == 503
+
+    def test_unexpected_error_returns_500(self):
+        """Any other exception should result in HTTP 500."""
+        with patch(
+            "app.services.players_service.search_players",
+            side_effect=RuntimeError("boom"),
+        ):
+            response = client.get("/api/v1/players/search", params={"q": "judge"})
+        assert response.status_code == 500

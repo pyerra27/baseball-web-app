@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config'
-import type { CurrentSeasonResponse, Team, RosterResponse, PlayerStatsResponse, PlayerCareerStatsResponse, ScoresResponse, BoxScoreResponse } from '../models/mlb.models'
+import type { CurrentSeasonResponse, Team, RosterResponse, PlayerStatsResponse, PlayerCareerStatsResponse, PlayerSearchResponse, ScoresResponse, BoxScoreResponse } from '../models/mlb.models'
 
 /**
  * FastAPI sends `detail` as a string, or as a list of validation errors
@@ -46,6 +46,10 @@ export function fetchPlayerStats(playerId: number, season: number): Promise<Play
 
 export function fetchPlayerCareerStats(playerId: number): Promise<PlayerCareerStatsResponse> {
     return apiFetch<PlayerCareerStatsResponse>(`/players/${playerId}/career-stats`)
+}
+
+export function searchPlayers(query: string): Promise<PlayerSearchResponse> {
+    return apiFetch<PlayerSearchResponse>(`/players/search?q=${encodeURIComponent(query)}`)
 }
 
 export function fetchScores(date?: string): Promise<ScoresResponse> {
