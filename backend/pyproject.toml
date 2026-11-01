@@ -11,7 +11,8 @@ dependencies = [
     "fastapi==0.135.3",
     "uvicorn[standard]==0.43.0",
     "pydantic==2.12.5",
-    "baseball-api-wrapper==0.3.0",
+    "baseball-api-wrapper==0.3.1",
+    "certifi==2026.10.23",  # GHSA-6q48-6c7w-9gw2 (compromised emSign CA); fixed in >=2026.10.19
 ]
 
 [project.optional-dependencies]
